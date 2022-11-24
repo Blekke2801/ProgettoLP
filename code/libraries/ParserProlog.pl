@@ -1,21 +1,27 @@
 %%% jsonparse/2 jsonparse(JSONString, Object).
 %%% prima funzione, vera quando la stringa può essere scomposta in stringhe numeri o termini composti
+
 jsonparse("", []).
 
 jsonparse(JSONString, Object) :- 
     string(JSONString),
-    split_string(JSONString, "\s", "\s", X), jsonparse(X, Object).
+    split_string(JSONString, "\s","\s", X), 
+    jsonparse(X, Object),
+    delete("\n", X, Xt).
 
-jsonparse(X, Object) :- 
+
+jsonparse(Xt, Object) :- 
     Xo = "{",
-    Xc = "}",   
-    (X is [Xo | Members], last(X, Xc), jsonparse([Xo | Members], Object));
-    (X is [Yo | Elements], last(X, Yc), jsonparse([Yo | Elements], Object)).
+    Xc = "}",
+    Yo = "[",
+    Yc = "]",   
+    (Xt is [Xo | Members], last(Xt, Xc), jsonparse([Xo | Members], Object));
+    (Xt is [Yo | Elements], last(Xt, Yc), jsonparse([Yo | Elements], Object)).
 
 jsonparse([Xo | Members], Object) :- 
-    delete([Xo | Members], Xo, New),
+    selectchk([Xo | Members], Xo, New),
     reverse(New, R_new),
-    delete(R_new, Xc, New2),
+    selectchk(R_new, Xc, New2),
     reverse(New2, Members),
     (Members is [Pair | MoreMembers], jsonparse([[]], Object); 
     jsonparse([Pair | MoreMembers], [])).
@@ -42,17 +48,22 @@ jsonparse([Pair | MoreMembers], [Xo, [[Attribute, Punti, Value] | Other], Xc]) :
     jsonparse([Pair | MoreMembers], Object).
 
 jsonparse([Yo | Elements], Object) :- 
-    delete([Yo | Elements], Yo, New),
+    selectchk([Yo | Elements], Yo, New),
     reverse(New, R_new),
-    delete(R_new, Yc,  New2),
+    selectchk(R_new, Yc,  New2),
     reverse(New2, Elements),
-    string_chars(Virgola, ","),
-    Elements is [[Value, Virgola] | MoreValues],
-    (jsonparse([[Value, Virgola] | MoreValues], Object); jsonparse([[]], Object)).
+    delete(",", X, Elementst).
+    Elementst is [Value | MoreValues],
+    jsonparse([Value | MoreValues], Object); 
+    jsonparse([[]], Object).
 
-jsonparse([[[Value, Virgola] | MoreValues]], Object) :-
+jsonparse([Value | MoreValues], Object) :-
     (string(Value); Value is Object; number(Value)),
-    jsonparse([], [Yo, [[Value, Virgola] | MoreValues], Yc]).
+    jsonparse([MoreValues], [Yo, [Value | Other], Yc]).
+
+jsonparse([MoreValues], [Yo, [Value | Other], Yc]) :-
+    Object is [Yo, [Value | Other], Yc],
+    jsonparse([Value | MoreValues], Object).
 
 jsonparse([[]], Object) :- 
     jsonparse([], [Yo, Yc]).
