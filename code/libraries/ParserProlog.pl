@@ -31,7 +31,15 @@ jsonparse([Pair | MoreMembers], Object) :-
 jsonparse([[Attribute, Punti, Value] | MoreMembers], Object) :-
     string(Attribute),
     (string(Value); jsonobj(Value); number(Value)),
-    jsonparse([], [Xo, [[Attribute, Punti, Value] | MoreMembers], Xc]).
+    jsonparse([MoreMembers], [Xo, [[Attribute, Punti, Value]], Xc]).
+
+jsonparse([MoreMembers], [Xo, [[Attribute, Punti, Value]], Xc]) :-
+    MoreMembers is [Pair | MoreMembers],
+    jsonparse([Pair | MoreMembers], [Xo, [[Attribute, Punti, Value] | Other], Xc]).
+
+jsonparse([Pair | MoreMembers], [Xo, [[Attribute, Punti, Value] | Other], Xc]) :-
+    Object is [Xo, [[Attribute, Punti, Value] | Other], Xc],
+    jsonparse([Pair | MoreMembers], Object).
 
 jsonparse([Yo | Elements], Object) :- 
     delete([Yo | Elements], Yo, New),
