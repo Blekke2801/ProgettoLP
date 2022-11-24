@@ -37,7 +37,7 @@ jsonparse([Pair | MoreMembers], Object) :-
 jsonparse([[Attribute, Punti, Value] | MoreMembers], Object) :-
     string(Attribute),
     (string(Value); jsonobj(Value); number(Value)),
-    jsonparse([MoreMembers], [Xo, [[Attribute, Punti, Value]], Xc]).
+    jsonparse([MoreMembers], [[Attribute, Punti, Value]]).
 
 jsonparse([MoreMembers], [Xo, [[Attribute, Punti, Value]], Xc]) :-
     MoreMembers is [Pair | MoreMembers],
@@ -59,19 +59,19 @@ jsonparse([Yo | Elements], Object) :-
 
 jsonparse([Value | MoreValues], Object) :-
     (string(Value); Value is Object; number(Value)),
-    jsonparse([MoreValues], [Yo, [Value | Other], Yc]).
+    jsonparse([MoreValues], [[Value | Other]]).
 
-jsonparse([MoreValues], [Yo, [Value | Other], Yc]) :-
-    Object is [Yo, [Value | Other], Yc],
+jsonparse([MoreValues], [Value | Other]) :-
+    Object is [Value | Other],
     jsonparse([Value | MoreValues], Object).
 
 jsonparse([[]], Object) :- 
     jsonparse([], [Yo, Yc]).
 
-jsonparse([], [Xo, [[Attribute, Punti, Value] | MoreMembers], Xc]).
-jsonparse([Yc], [Yo | [[Value| Virgola] | MoreValues]]).
-jsonparse([], [Yo, Yc]).
-jsonparse([], [Yo, [[Value, Virgola] | MoreValues], Yc]).
+jsonparse([], [[Attribute, Punti, Value] | MoreMembers]).
+jsonparse([], [[[Value | Virgola] | MoreValues]]).
+jsonparse([], []).
+jsonparse([], [[[Value, Virgola] | MoreValues]]).
 
 
 
@@ -83,11 +83,24 @@ jsonparse([], [Yo, [[Value, Virgola] | MoreValues], Yc]).
 %%% (una lista) a partire da Jsonobj. Un campo rappresentato da N (con N un numero maggiore o
 %%% uguale a 0) corrisponde a un indice di un array JSON.
 
-/*jsonaccess(Object, [], Result).
+/*
+jsonaccess("", [], Result) :- 
+    jsonaccess("", [], []).
 
-jsonaccess(jsonobj(Members), Fields, Result) :- 
-    jsonaccess([[[Attribute | ':'] | Value] | MoreMembers], [Field | MoreFields], Result),
-    Attribute = Field.
-jsonaccess([[[Attribute | ':'] | Value] | MoreMembers], [Field | MoreFields], Result), Attribute = Field :- 
-    jsonaccess([MoreMembers], [MoreFields], [Value]).*/
+jsonaccess(Jsonobj,Fields,Result) :- 
+    jsonparse(Jsonobj, Object),
+    jsonaccess(Object, Fields,Result).
+
+jsonaccess(Object, [Field | MoreFields], Result) :-
+    Object is [Pair | MoreMembers],
+    Pair is [Attribute , Punti , Value],
+    jsonaccess([[Attribute , Punti , Value] | MoreMembers], [Field | MoreFields], Result).
+
+jsonaccess([[Attribute , Punti , Value] | MoreMembers], [Field | MoreFields], Result) :-
+    Attribute =:= Field,
+    jsonaccess([MoreMembers], [MoreFields], [[Field, Punti, Value]]).
+
+*/
+
+
 
