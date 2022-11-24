@@ -5,20 +5,21 @@ jsonparse(JSONString, Object) :-
     string(JSONString),
     split_string(JSONString, "\s", "\s", X), jsonparse(X, Object).
 
-jsonparse(X, Object) :- 
-    (jsonparse([Xo | Members], Object), Xo =:= string_chars(String, '{'));
-    (jsonparse([Yo | Elements], Object), Yo =:= string_chars(String,'[')).
+jsonparse(X, Object) :-
+    (Xo = "{", Xc = "}", X is [Xo | Members], last(X, Xc), jsonparse([Xo | Members], Object));
+    (Yo = "[", Yc = "]", X is [Yo | Elements], last(X, Yc), jsonparse([Yo | Members], Object));
 
 jsonparse([Xo | Members], Object) :- 
-    (jsonparse([[] | Xc], [Xo]); jsonparse([[Pair | MoreMembers] | Xc], [Yo])),
-    Xc =:= string_chars(String,'}').
+    (Members is [Pair | MoreMembers], jsonparse([[] | Xc], [Xo]); 
+    jsonparse([[Pair | MoreMembers] | Xc], [Yo])).
 
 jsonparse([[] | Xc], [Xo]) :- 
-    jsonparse([Xc], [Xo | []]).
+    jsonparse([], [Xo | Xc]).
 
 jsonparse([[Pair | MoreMembers] | Xc], [Xo]) :- 
-    jsonparse([[[[[Attribute | Punti]] | Value] | MoreMembers] | Xc], [Xo]),
-    Punti =:= ':'.  
+    Punti = ":",
+    Pair is [Attribute | Punti]] | Value],
+    jsonparse([[[[[Attribute | Punti]] | Value] | MoreMembers] | Xc], [Xo]).
 
 jsonparse([[[[Attribute | Punti] | Value] | MoreMembers]  | Xc], [Xo]) :-
     string(Attribute),
@@ -27,8 +28,6 @@ jsonparse([[[[Attribute | Punti] | Value] | MoreMembers]  | Xc], [Xo]) :-
 
 jsonparse([Yo | Elements], Object) :-
     (jsonparse([[[Value| Virgola] | MoreValues] | Yc], [Yo]); jsonparse([[] | Yc], [Yo])).
-    Yc =:= ']',
-    Virgola =:= ','.
 
 jsonparse([[[Value| Virgola] | MoreValues] | Yc], [Yc]) :-
     (string(Value); jsonobj(Value); number(Value)),
@@ -37,9 +36,9 @@ jsonparse([[[Value| Virgola] | MoreValues] | Yc], [Yc]) :-
 jsonparse([[] | Yc], [Yo]) :- 
     jsonparse([Yc], [Yo | []]).
 
-jsonparse([Xc], [Xo | []]).
+jsonparse([], [Xo | Xc]).
 jsonparse([Yc], [Yo | [[Value| Virgola] | MoreValues]]).
-jsonparse([Yc], [Yo | []]).
+jsonparse([], [Yo | Yc]).
 jsonparse([Xc], [Xo | [[[Attribute | Punti] | Value] | MoreMembers]]).
 
 
