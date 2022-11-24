@@ -10,7 +10,7 @@ jsonparse(X, Object) :-
     Xo = "{",
     Xc = "}",   
     (X is [Xo | Members], last(X, Xc), jsonparse([Xo | Members], Object));
-    (X is [Yo | Elements], last(X, Yc), jsonparse([Yo | Members], Object)).
+    (X is [Yo | Elements], last(X, Yc), jsonparse([Yo | Elements], Object)).
 
 jsonparse([Xo | Members], Object) :- 
     delete([Xo | Members], Xo, New),
