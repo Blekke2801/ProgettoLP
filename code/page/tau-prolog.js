@@ -934,7 +934,7 @@
 			return {type: ERROR, derived: false, value: pl.error.syntax(tokens[start-1], "unfounded token")};
 		var atom = tokens[start];
 		var exprs = [];
-		if(tokens[start].name === "atom" && tokens[start].raw !== ",") {
+		if(tokens[start].name === "atom" && tokens[start].raw !== ',') {
 			start++;
 			if(tokens[start-1].space) return {type: SUCCESS, len: start, value: new pl.type.Term(atom.value, exprs)};
 			if(tokens[start] && tokens[start].name === "l_paren") {
@@ -949,7 +949,7 @@
 				}
 				exprs.push(expr.value);
 				start = expr.len;
-				while(tokens[start] && tokens[start].name === "atom" && tokens[start].value === ",") {
+				while(tokens[start] && tokens[start].name === "atom" && tokens[start].value === ',') {
 					expr = parseExpr(thread, tokens, start+1, "999", true);
 					if(expr.type === ERROR) {
 						if( expr.derived )
@@ -986,7 +986,7 @@
 			
 			start = expr.len;
 
-			while(tokens[start] && tokens[start].name === "atom" && tokens[start].value === ",") {
+			while(tokens[start] && tokens[start].name === "atom" && tokens[start].value === ',') {
 				expr = parseExpr(thread, tokens, start+1, "999", true);
 				if(expr.type === ERROR) {
 					if( expr.derived )
@@ -1370,7 +1370,7 @@
 					return pl.error.type("list", terminals, "DCG/0");
 				pointer.args[1] = dcg.variable;
 			}
-			rule.body = new Term(",", [rule.body, new Term("=", [last, terminals])]);
+			rule.body = new Term(',', [rule.body, new Term("=", [last, terminals])]);
 			rule.head = new Term(rule.head.id, rule.head.args.concat([begin, last]));
 		} else {
 			// replace first assignment
@@ -1400,7 +1400,7 @@
 		if( pl.type.is_term( expr ) && expr.indicator === "!/0" ) {
 			free = thread.next_free_variable();
 			return {
-				value: new Term(",", [expr, new Term("=", [last, free])]),
+				value: new Term(',', [expr, new Term("=", [last, free])]),
 				variable: free,
 				error: false
 			};
@@ -1417,7 +1417,7 @@
 			if( left.error ) return left;
 			free = thread.next_free_variable();
 			return {
-				value: new Term(",", [new Term(expr.id, [left.value]), new Term("=", [last, free])]),
+				value: new Term(',', [new Term(expr.id, [left.value]), new Term("=", [last, free])]),
 				variable: free,
 				error: false
 			};
@@ -1437,14 +1437,14 @@
 			var right = body_to_dcg(expr.args[1], last, thread);
 			if( right.error ) return right;
 			return {
-				value: new Term(",", [new Term(";", [left.value, right.value]), new Term("=", [left.variable, right.variable])]),
+				value: new Term(',', [new Term(";", [left.value, right.value]), new Term("=", [left.variable, right.variable])]),
 				variable: right.variable,
 				error: false
 			};
 		} else if( pl.type.is_term( expr ) && expr.indicator === "{}/1" ) {
 			free = thread.next_free_variable();
 			return {
-				value: new Term(",", [expr.args[0], new Term("=", [last, free])]),
+				value: new Term(',', [expr.args[0], new Term("=", [last, free])]),
 				variable: free,
 				error: false
 			};
@@ -1748,7 +1748,7 @@
 			1150: { "meta_predicate": ["fx"] },
 			1100: { ";": ["xfy"] },
 			1050: { "->": ["xfy"], "*->": ["xfy"] },
-			1000: { ",": ["xfy"] },
+			1000: { ',': ["xfy"] },
 			900: { "\\+": ["fy"] },
 			700: {
 				"=": ["xfx"], "\\=": ["xfx"], "==": ["xfx"], "\\==": ["xfx"],
@@ -2005,35 +2005,35 @@
 				return this.id;
 			case "{}/1":
 				if( options.ignore_ops === false ) {
-					return "{" + this.args[0].toString( options ) + "}";
+					return '{' + this.args[0].toString( options ) + '}';
 				} else {
 					return "{}(" + this.args[0].toString( options ) + ")";
 				}
 			case "./2":
 				if( options.ignore_ops === false ) {
-					var list = "[" + this.args[0].toString( options, arg_priority );
+					var list = '[' + this.args[0].toString( options, arg_priority );
 					var pointer = this.args[1];
 					while( pointer.indicator === "./2" ) {
-						list += "," + pointer.args[0].toString( options, arg_priority );
+						list += ',' + pointer.args[0].toString( options, arg_priority );
 						pointer = pointer.args[1];
 					}
 					if( pointer.indicator !== "[]/0" ) {
 						list += "|" + pointer.toString( options, arg_priority );
 					}
-					list += "]";
+					list += ']';
 					return list;
 				}
 			default:
 				var id = this.id;
 				var operator = options.session ? options.session.lookup_operator( this.id, this.args.length ) : null;
 				if( options.session === undefined || options.ignore_ops || operator === null ) {
-					if( options.quoted && (! /^(!|[a-z][0-9a-zA-Z_]*|[#\$\&\*\+\-\.\/\:\<\=\>\?\@\^\~\\]+)$/.test( id ) && id !== "{}" && id !== "[]" || indexOf([".",",",";"], id) !== -1 || id.substring(0,2) === "/*") )
+					if( options.quoted && (! /^(!|[a-z][0-9a-zA-Z_]*|[#\$\&\*\+\-\.\/\:\<\=\>\?\@\^\~\\]+)$/.test( id ) && id !== "{}" && id !== "[]" || indexOf([".',',',';"], id) !== -1 || id.substring(0,2) === "/*") )
 						id = "'" + redoEscape(id) + "'";
 					if( this.args.length === 0 && is_graphic_token(this.id) && priority.indicator !== "")
 						return "(" + id + ")";
 					return id + (this.args.length > 0 ? "(" + map( this.args,
 						function(x) { return x.toString(options, arg_priority); }
-					).join(",") + ")" : "");
+					).join(',') + ")" : "");
 				} else {
 					var priority_op = parseInt(operator.priority);
 					var priority_arg = parseInt(priority.priority);
@@ -2048,14 +2048,14 @@
 					operator.indicator = this.indicator;
 					var lpar = cond ? "(" : "";
 					var rpar = cond ? ")" : "";
-					var space = !(is_graphic_token(this.id) || this.id === "," || this.id === ";")
+					var space = !(is_graphic_token(this.id) || this.id === ',' || this.id === ";")
 						|| operator.class.length === 2
 						|| operator.class.length === 3 && pl.type.is_number(this.args[1]) && this.args[1].value < 0 ? " " : "";
 					if( this.args.length === 0 ) {
 						return lpar + this.id + rpar;
-					} else if( ["fy","fx"].indexOf( operator.class) !== -1 ) {
+					} else if( ["fy','fx"].indexOf( operator.class) !== -1 ) {
 						return lpar + id + space + this.args[0].toString( options, operator, "right" ) + rpar;
-					} else if( ["yf","xf"].indexOf( operator.class) !== -1 ) {
+					} else if( ["yf','xf"].indexOf( operator.class) !== -1 ) {
 						return lpar + this.args[0].toString( options, operator, "left" ) + space + id + rpar;
 					} else {
 						return lpar + this.args[0].toString( options, operator, "left" ) + space + this.id + space + this.args[1].toString( options, operator, "right" ) +  rpar;
@@ -2071,15 +2071,15 @@
 	
 	// Substitutions
 	Substitution.prototype.toString = function( options ) {
-		var str = "{";
+		var str = '{';
 		for( var link in this.links ) {
 			if(!this.links.hasOwnProperty(link)) continue;
-			if( str !== "{" ) {
+			if( str !== '{' ) {
 				str += ", ";
 			}
 			str += link + "/" + this.links[link].toString( options );
 		}
-		str += "}";
+		str += '}';
 		return str;
 	};
 	
@@ -2456,9 +2456,9 @@
 	Term.prototype.replace = function( expr ) {
 		if( this.indicator === ",/2" ) {
 			if( this.args[0].indicator === ",/2" ) {
-				return new Term( ",", [this.args[0].replace( expr ), this.args[1]] );
+				return new Term( ',', [this.args[0].replace( expr ), this.args[1]] );
 			} else {
-				return expr === null ? this.args[1] : new Term( ",", [expr, this.args[1]] );
+				return expr === null ? this.args[1] : new Term( ',', [expr, this.args[1]] );
 			}
 		} else {
 			return expr;
@@ -3089,7 +3089,7 @@
 				atom.context_module = context_module;
 				if(atom.indicator === ",/2") {
 					this.prepend([new State(
-						point.goal.replace(new Term(",", [
+						point.goal.replace(new Term(',', [
 							new Term(":", [new Term(context_module), atom.args[0]]),
 							new Term(":", [new Term(context_module), atom.args[1]])])),
 						point.substitution,
@@ -3474,10 +3474,10 @@
 				rules.push(indicator[i].compile());
 			}
 			str += rules.join();
-			str += "]";
+			str += ']';
 			obj.push( str );
 		}
-		return "{" + obj.join() + "};";
+		return '{' + obj.join() + "};";
 	};
 
 	// Module
@@ -3502,7 +3502,7 @@
 				for(var i = 0; i < this.rules[prop].length; i++) {
 					str += "\t\t\t\t" + this.rules[prop][i].compile();
 					if(i < this.rules[prop].length-1)
-						str += ",";
+						str += ',';
 					str += "\n";
 				}
 				str += "\t\t\t]";
@@ -3857,7 +3857,7 @@
 			// Is a callable term
 			is_callable: function( obj ) {
 				return obj instanceof Term
-				&& (indexOf([",/2",";/2","->/2"], obj.indicator) === -1
+				&& (indexOf([",/2',';/2','->/2"], obj.indicator) === -1
 				|| pl.type.is_callable(obj.args[0]) && pl.type.is_callable(obj.args[1]))
 				|| obj instanceof Var;
 			},
@@ -4022,7 +4022,7 @@
 
 			// Is a io mode
 			is_io_mode: function( obj ) {
-				return pl.type.is_atom( obj ) && ["read","write","append"].indexOf( obj.id ) !== -1;
+				return pl.type.is_atom( obj ) && ["read','write','append"].indexOf( obj.id ) !== -1;
 			},
 
 			// Is a stream option
@@ -4074,7 +4074,7 @@
 
 			// Is a read option
 			is_read_option: function( obj ) {
-				return pl.type.is_term( obj ) && ["variables/1","variable_names/1","singletons/1"].indexOf( obj.indicator ) !== -1;
+				return pl.type.is_term( obj ) && ["variables/1','variable_names/1','singletons/1"].indexOf( obj.indicator ) !== -1;
 			},
 
 			// Is a write option
@@ -4650,7 +4650,7 @@
 							thread.throw_warning( pl.error.type( "atom", operator, atom.indicator ) );
 						} else if( priority.value < 0 || priority.value > 1200 ) {
 							thread.throw_warning( pl.error.domain( "operator_priority", priority, atom.indicator ) );
-						} else if( operator.id === "," ) {
+						} else if( operator.id === ',' ) {
 							thread.throw_error( pl.error.permission( "modify", "operator", operator, atom.indicator ) );
 						} else if( operator.id === "{}" ) {
 							thread.throw_warning( pl.error.permission( "create", "operator", operator, atom.indicator ) );
@@ -5153,23 +5153,23 @@
 
 		// goal_expansion/2
 		"goal_expansion/2": [
-			new Rule(new Term("goal_expansion", [new Term(",", [new Var("X"),new Var("Y")]),new Term(",", [new Var("X_"),new Var("Y_")])]), new Term(";", [new Term(",", [new Term("goal_expansion", [new Var("X"),new Var("X_")]),new Term(";", [new Term("goal_expansion", [new Var("Y"),new Var("Y_")]),new Term("=", [new Var("Y_"),new Var("Y")])])]),new Term(",", [new Term("=", [new Var("X"),new Var("X_")]),new Term("goal_expansion", [new Var("Y"),new Var("Y_")])])])),
-			new Rule(new Term("goal_expansion", [new Term(";", [new Var("X"),new Var("Y")]),new Term(";", [new Var("X_"),new Var("Y_")])]), new Term(";", [new Term(",", [new Term("goal_expansion", [new Var("X"),new Var("X_")]),new Term(";", [new Term("goal_expansion", [new Var("Y"),new Var("Y_")]),new Term("=", [new Var("Y_"),new Var("Y")])])]),new Term(",", [new Term("=", [new Var("X"),new Var("X_")]),new Term("goal_expansion", [new Var("Y"),new Var("Y_")])])])),
-			new Rule(new Term("goal_expansion", [new Term("->", [new Var("X"),new Var("Y")]),new Term("->", [new Var("X_"),new Var("Y_")])]), new Term(";", [new Term(",", [new Term("goal_expansion", [new Var("X"),new Var("X_")]),new Term(";", [new Term("goal_expansion", [new Var("Y"),new Var("Y_")]),new Term("=", [new Var("Y_"),new Var("Y")])])]),new Term(",", [new Term("=", [new Var("X"),new Var("X_")]),new Term("goal_expansion", [new Var("Y"),new Var("Y_")])])])),
-			new Rule(new Term("goal_expansion", [new Term("catch", [new Var("X"),new Var("Y"),new Var("Z")]),new Term("catch", [new Var("X_"),new Var("Y"),new Var("Z_")])]), new Term(";", [new Term(",", [new Term("goal_expansion", [new Var("X"),new Var("X_")]),new Term(";", [new Term("goal_expansion", [new Var("Z"),new Var("Z_")]),new Term("=", [new Var("Z_"),new Var("Z")])])]),new Term(",", [new Term("=", [new Var("X_"),new Var("X")]),new Term("goal_expansion", [new Var("Z"),new Var("Z_")])])])),
-			new Rule(new Term("goal_expansion", [new Term("\\+", [new Var("X")]),new Term("\\+", [new Var("X_")])]), new Term(",", [new Term("nonvar", [new Var("X")]),new Term("goal_expansion", [new Var("X"),new Var("X_")])])),
-			new Rule(new Term("goal_expansion", [new Term("once", [new Var("X")]),new Term("once", [new Var("X_")])]), new Term(",", [new Term("nonvar", [new Var("X")]),new Term("goal_expansion", [new Var("X"),new Var("X_")])])),
+			new Rule(new Term("goal_expansion", [new Term(',', [new Var("X"),new Var("Y")]),new Term(',', [new Var("X_"),new Var("Y_")])]), new Term(";", [new Term(',', [new Term("goal_expansion", [new Var("X"),new Var("X_")]),new Term(";", [new Term("goal_expansion", [new Var("Y"),new Var("Y_")]),new Term("=", [new Var("Y_"),new Var("Y")])])]),new Term(',', [new Term("=", [new Var("X"),new Var("X_")]),new Term("goal_expansion", [new Var("Y"),new Var("Y_")])])])),
+			new Rule(new Term("goal_expansion", [new Term(";", [new Var("X"),new Var("Y")]),new Term(";", [new Var("X_"),new Var("Y_")])]), new Term(";", [new Term(',', [new Term("goal_expansion", [new Var("X"),new Var("X_")]),new Term(";", [new Term("goal_expansion", [new Var("Y"),new Var("Y_")]),new Term("=", [new Var("Y_"),new Var("Y")])])]),new Term(',', [new Term("=", [new Var("X"),new Var("X_")]),new Term("goal_expansion", [new Var("Y"),new Var("Y_")])])])),
+			new Rule(new Term("goal_expansion", [new Term("->", [new Var("X"),new Var("Y")]),new Term("->", [new Var("X_"),new Var("Y_")])]), new Term(";", [new Term(',', [new Term("goal_expansion", [new Var("X"),new Var("X_")]),new Term(";", [new Term("goal_expansion", [new Var("Y"),new Var("Y_")]),new Term("=", [new Var("Y_"),new Var("Y")])])]),new Term(',', [new Term("=", [new Var("X"),new Var("X_")]),new Term("goal_expansion", [new Var("Y"),new Var("Y_")])])])),
+			new Rule(new Term("goal_expansion", [new Term("catch", [new Var("X"),new Var("Y"),new Var("Z")]),new Term("catch", [new Var("X_"),new Var("Y"),new Var("Z_")])]), new Term(";", [new Term(',', [new Term("goal_expansion", [new Var("X"),new Var("X_")]),new Term(";", [new Term("goal_expansion", [new Var("Z"),new Var("Z_")]),new Term("=", [new Var("Z_"),new Var("Z")])])]),new Term(',', [new Term("=", [new Var("X_"),new Var("X")]),new Term("goal_expansion", [new Var("Z"),new Var("Z_")])])])),
+			new Rule(new Term("goal_expansion", [new Term("\\+", [new Var("X")]),new Term("\\+", [new Var("X_")])]), new Term(',', [new Term("nonvar", [new Var("X")]),new Term("goal_expansion", [new Var("X"),new Var("X_")])])),
+			new Rule(new Term("goal_expansion", [new Term("once", [new Var("X")]),new Term("once", [new Var("X_")])]), new Term(',', [new Term("nonvar", [new Var("X")]),new Term("goal_expansion", [new Var("X"),new Var("X_")])])),
 			new Rule(new Term("goal_expansion", [new Term("findall", [new Var("X"),new Var("Y"),new Var("Z")]),new Term("findall", [new Var("X"),new Var("Y_"),new Var("Z")])]), new Term("goal_expansion", [new Var("Y"),new Var("Y_")])),
 			new Rule(new Term("goal_expansion", [new Term("setof", [new Var("X"),new Var("Y"),new Var("Z")]),new Term("findall", [new Var("X"),new Var("Y_"),new Var("Z")])]), new Term("goal_expansion", [new Var("Y"),new Var("Y_")])),
 			new Rule(new Term("goal_expansion", [new Term("bagof", [new Var("X"),new Var("Y"),new Var("Z")]),new Term("findall", [new Var("X"),new Var("Y_"),new Var("Z")])]), new Term("goal_expansion", [new Var("Y"),new Var("Y_")])),
-			new Rule(new Term("goal_expansion", [new Term("call", [new Var("X")]),new Term("call", [new Var("X_")])]), new Term(",", [new Term("nonvar", [new Var("X")]),new Term("goal_expansion", [new Var("X"),new Var("X_")])])),
-			new Rule(new Term("goal_expansion", [new Term("call", [new Var("X"),new Var("A1")]),new Term("call", [new Var("F_")])]), new Term(",", [new Term("=..", [new Var("F"),new Term(".", [new Var("X"),new Term(".", [new Var("A1"),new Term("[]", [])])])]),new Term("goal_expansion", [new Var("F"),new Var("F_")])])),
-			new Rule(new Term("goal_expansion", [new Term("call", [new Var("X"),new Var("A1"),new Var("A2")]),new Term("call", [new Var("F_")])]), new Term(",", [new Term("=..", [new Var("F"),new Term(".", [new Var("X"),new Term(".", [new Var("A1"),new Term(".", [new Var("A2"),new Term("[]", [])])])])]),new Term("goal_expansion", [new Var("F"),new Var("F_")])])),
-			new Rule(new Term("goal_expansion", [new Term("call", [new Var("X"),new Var("A1"),new Var("A2"),new Var("A3")]),new Term("call", [new Var("F_")])]), new Term(",", [new Term("=..", [new Var("F"),new Term(".", [new Var("X"),new Term(".", [new Var("A1"),new Term(".", [new Var("A2"),new Term(".", [new Var("A3"),new Term("[]", [])])])])])]),new Term("goal_expansion", [new Var("F"),new Var("F_")])])),
-			new Rule(new Term("goal_expansion", [new Term("call", [new Var("X"),new Var("A1"),new Var("A2"),new Var("A3"),new Var("A4")]),new Term("call", [new Var("F_")])]), new Term(",", [new Term("=..", [new Var("F"),new Term(".", [new Var("X"),new Term(".", [new Var("A1"),new Term(".", [new Var("A2"),new Term(".", [new Var("A3"),new Term(".", [new Var("A4"),new Term("[]", [])])])])])])]),new Term("goal_expansion", [new Var("F"),new Var("F_")])])),
-			new Rule(new Term("goal_expansion", [new Term("call", [new Var("X"),new Var("A1"),new Var("A2"),new Var("A3"),new Var("A4"),new Var("A5")]),new Term("call", [new Var("F_")])]), new Term(",", [new Term("=..", [new Var("F"),new Term(".", [new Var("X"),new Term(".", [new Var("A1"),new Term(".", [new Var("A2"),new Term(".", [new Var("A3"),new Term(".", [new Var("A4"),new Term(".", [new Var("A5"),new Term("[]", [])])])])])])])]),new Term("goal_expansion", [new Var("F"),new Var("F_")])])),
-			new Rule(new Term("goal_expansion", [new Term("call", [new Var("X"),new Var("A1"),new Var("A2"),new Var("A3"),new Var("A4"),new Var("A5"),new Var("A6")]),new Term("call", [new Var("F_")])]), new Term(",", [new Term("=..", [new Var("F"),new Term(".", [new Var("X"),new Term(".", [new Var("A1"),new Term(".", [new Var("A2"),new Term(".", [new Var("A3"),new Term(".", [new Var("A4"),new Term(".", [new Var("A5"),new Term(".", [new Var("A6"),new Term("[]", [])])])])])])])])]),new Term("goal_expansion", [new Var("F"),new Var("F_")])])),
-			new Rule(new Term("goal_expansion", [new Term("call", [new Var("X"),new Var("A1"),new Var("A2"),new Var("A3"),new Var("A4"),new Var("A5"),new Var("A6"),new Var("A7")]),new Term("call", [new Var("F_")])]), new Term(",", [new Term("=..", [new Var("F"),new Term(".", [new Var("X"),new Term(".", [new Var("A1"),new Term(".", [new Var("A2"),new Term(".", [new Var("A3"),new Term(".", [new Var("A4"),new Term(".", [new Var("A5"),new Term(".", [new Var("A6"),new Term(".", [new Var("A7"),new Term("[]", [])])])])])])])])])]),new Term("goal_expansion", [new Var("F"),new Var("F_")])]))
+			new Rule(new Term("goal_expansion", [new Term("call", [new Var("X")]),new Term("call", [new Var("X_")])]), new Term(',', [new Term("nonvar", [new Var("X")]),new Term("goal_expansion", [new Var("X"),new Var("X_")])])),
+			new Rule(new Term("goal_expansion", [new Term("call", [new Var("X"),new Var("A1")]),new Term("call", [new Var("F_")])]), new Term(',', [new Term("=..", [new Var("F"),new Term(".", [new Var("X"),new Term(".", [new Var("A1"),new Term("[]", [])])])]),new Term("goal_expansion", [new Var("F"),new Var("F_")])])),
+			new Rule(new Term("goal_expansion", [new Term("call", [new Var("X"),new Var("A1"),new Var("A2")]),new Term("call", [new Var("F_")])]), new Term(',', [new Term("=..", [new Var("F"),new Term(".", [new Var("X"),new Term(".", [new Var("A1"),new Term(".", [new Var("A2"),new Term("[]", [])])])])]),new Term("goal_expansion", [new Var("F"),new Var("F_")])])),
+			new Rule(new Term("goal_expansion", [new Term("call", [new Var("X"),new Var("A1"),new Var("A2"),new Var("A3")]),new Term("call", [new Var("F_")])]), new Term(',', [new Term("=..", [new Var("F"),new Term(".", [new Var("X"),new Term(".", [new Var("A1"),new Term(".", [new Var("A2"),new Term(".", [new Var("A3"),new Term("[]", [])])])])])]),new Term("goal_expansion", [new Var("F"),new Var("F_")])])),
+			new Rule(new Term("goal_expansion", [new Term("call", [new Var("X"),new Var("A1"),new Var("A2"),new Var("A3"),new Var("A4")]),new Term("call", [new Var("F_")])]), new Term(',', [new Term("=..", [new Var("F"),new Term(".", [new Var("X"),new Term(".", [new Var("A1"),new Term(".", [new Var("A2"),new Term(".", [new Var("A3"),new Term(".", [new Var("A4"),new Term("[]", [])])])])])])]),new Term("goal_expansion", [new Var("F"),new Var("F_")])])),
+			new Rule(new Term("goal_expansion", [new Term("call", [new Var("X"),new Var("A1"),new Var("A2"),new Var("A3"),new Var("A4"),new Var("A5")]),new Term("call", [new Var("F_")])]), new Term(',', [new Term("=..", [new Var("F"),new Term(".", [new Var("X"),new Term(".", [new Var("A1"),new Term(".", [new Var("A2"),new Term(".", [new Var("A3"),new Term(".", [new Var("A4"),new Term(".", [new Var("A5"),new Term("[]", [])])])])])])])]),new Term("goal_expansion", [new Var("F"),new Var("F_")])])),
+			new Rule(new Term("goal_expansion", [new Term("call", [new Var("X"),new Var("A1"),new Var("A2"),new Var("A3"),new Var("A4"),new Var("A5"),new Var("A6")]),new Term("call", [new Var("F_")])]), new Term(',', [new Term("=..", [new Var("F"),new Term(".", [new Var("X"),new Term(".", [new Var("A1"),new Term(".", [new Var("A2"),new Term(".", [new Var("A3"),new Term(".", [new Var("A4"),new Term(".", [new Var("A5"),new Term(".", [new Var("A6"),new Term("[]", [])])])])])])])])]),new Term("goal_expansion", [new Var("F"),new Var("F_")])])),
+			new Rule(new Term("goal_expansion", [new Term("call", [new Var("X"),new Var("A1"),new Var("A2"),new Var("A3"),new Var("A4"),new Var("A5"),new Var("A6"),new Var("A7")]),new Term("call", [new Var("F_")])]), new Term(',', [new Term("=..", [new Var("F"),new Term(".", [new Var("X"),new Term(".", [new Var("A1"),new Term(".", [new Var("A2"),new Term(".", [new Var("A3"),new Term(".", [new Var("A4"),new Term(".", [new Var("A5"),new Term(".", [new Var("A6"),new Term(".", [new Var("A7"),new Term("[]", [])])])])])])])])])]),new Term("goal_expansion", [new Var("F"),new Var("F_")])]))
 		],
 
 
@@ -5217,7 +5217,7 @@
 			}));
 			thread.prepend([
 				new State(
-					point.goal.replace(new Term(",", [
+					point.goal.replace(new Term(',', [
 						new Term("=", [goal_out, pointer]),
 						new Term("=", [vars, fv]) 
 					])),
@@ -5236,27 +5236,27 @@
 		// '$bind_bagof_keys/2'/2
 		"$bind_bagof_keys/2": [
 			new pl.type.Rule(new pl.type.Term("$bind_bagof_keys", [new pl.type.Term("[]", []),new pl.type.Var("_")]), null),
-			new pl.type.Rule(new pl.type.Term("$bind_bagof_keys", [new pl.type.Term(".", [new pl.type.Term("-", [new pl.type.Var("Key"),new pl.type.Var("_")]),new pl.type.Var("Bag")]),new pl.type.Var("Vars")]), new pl.type.Term(",", [new pl.type.Term("term_variables", [new pl.type.Var("Key"),new pl.type.Var("Vars"),new pl.type.Var("_")]),new pl.type.Term("$bind_bagof_keys", [new pl.type.Var("Bag"),new pl.type.Var("Vars")])]))
+			new pl.type.Rule(new pl.type.Term("$bind_bagof_keys", [new pl.type.Term(".", [new pl.type.Term("-", [new pl.type.Var("Key"),new pl.type.Var("_")]),new pl.type.Var("Bag")]),new pl.type.Var("Vars")]), new pl.type.Term(',', [new pl.type.Term("term_variables", [new pl.type.Var("Key"),new pl.type.Var("Vars"),new pl.type.Var("_")]),new pl.type.Term("$bind_bagof_keys", [new pl.type.Var("Bag"),new pl.type.Var("Vars")])]))
 		],
 
 		// '$findall'/4
 		"$findall/4": [
-			new pl.type.Rule(new pl.type.Term("$findall", [new pl.type.Var("Template0"),new pl.type.Var("Goal0"),new pl.type.Var("Instances"),new pl.type.Var("Tail")]), new pl.type.Term(";", [new pl.type.Term(",", [new pl.type.Term("copy_term", [new pl.type.Term("-", [new pl.type.Var("Template0"),new pl.type.Var("Goal0")]),new pl.type.Term("-", [new pl.type.Var("Template1"),new pl.type.Var("Goal1")])]),new pl.type.Term(",", [new pl.type.Term("call", [new pl.type.Var("Goal1")]),new pl.type.Term(",", [new pl.type.Term("copy_term", [new pl.type.Var("Template1"),new pl.type.Var("Template2")]),new pl.type.Term(",", [new pl.type.Term("$push_global_stack", [new pl.type.Var("Var"),new pl.type.Var("Template2")]),new pl.type.Term("false", [])])])])]),new pl.type.Term("$flush_global_stack", [new pl.type.Var("Var"),new pl.type.Var("Instances"),new pl.type.Var("Tail")])]))
+			new pl.type.Rule(new pl.type.Term("$findall", [new pl.type.Var("Template0"),new pl.type.Var("Goal0"),new pl.type.Var("Instances"),new pl.type.Var("Tail")]), new pl.type.Term(";", [new pl.type.Term(',', [new pl.type.Term("copy_term", [new pl.type.Term("-", [new pl.type.Var("Template0"),new pl.type.Var("Goal0")]),new pl.type.Term("-", [new pl.type.Var("Template1"),new pl.type.Var("Goal1")])]),new pl.type.Term(',', [new pl.type.Term("call", [new pl.type.Var("Goal1")]),new pl.type.Term(',', [new pl.type.Term("copy_term", [new pl.type.Var("Template1"),new pl.type.Var("Template2")]),new pl.type.Term(',', [new pl.type.Term("$push_global_stack", [new pl.type.Var("Var"),new pl.type.Var("Template2")]),new pl.type.Term("false", [])])])])]),new pl.type.Term("$flush_global_stack", [new pl.type.Var("Var"),new pl.type.Var("Instances"),new pl.type.Var("Tail")])]))
 		],
 
 		// '$bagof'/3
 		"$bagof/3": [
-			new pl.type.Rule(new pl.type.Term("$bagof", [new pl.type.Var("Template"),new pl.type.Var("Goal0"),new pl.type.Var("Answer")]), new pl.type.Term(",", [new pl.type.Term("$free_variable_set", [new pl.type.Term("^", [new pl.type.Var("Template"),new pl.type.Var("Goal0")]),new pl.type.Var("Goal1"),new pl.type.Var("FV")]),new pl.type.Term(",", [new pl.type.Term("findall", [new pl.type.Term("-", [new pl.type.Var("FV"),new pl.type.Var("Template")]),new pl.type.Var("Goal1"),new pl.type.Var("Answers"),new pl.type.Term("[]", [])]),new pl.type.Term(",", [new pl.type.Term("$bind_bagof_keys", [new pl.type.Var("Answers"),new pl.type.Var("_")]),new pl.type.Term(",", [new pl.type.Term("keygroup", [new pl.type.Var("Answers"),new pl.type.Var("KeyGroups")]),new pl.type.Term(",", [new pl.type.Term("keysort", [new pl.type.Var("KeyGroups"),new pl.type.Var("KeySorted")]),new pl.type.Term("$member", [new pl.type.Term("-", [new pl.type.Var("FV"),new pl.type.Var("Answer")]),new pl.type.Var("KeySorted")])])])])])]))
+			new pl.type.Rule(new pl.type.Term("$bagof", [new pl.type.Var("Template"),new pl.type.Var("Goal0"),new pl.type.Var("Answer")]), new pl.type.Term(',', [new pl.type.Term("$free_variable_set", [new pl.type.Term("^", [new pl.type.Var("Template"),new pl.type.Var("Goal0")]),new pl.type.Var("Goal1"),new pl.type.Var("FV")]),new pl.type.Term(',', [new pl.type.Term("findall", [new pl.type.Term("-", [new pl.type.Var("FV"),new pl.type.Var("Template")]),new pl.type.Var("Goal1"),new pl.type.Var("Answers"),new pl.type.Term("[]", [])]),new pl.type.Term(',', [new pl.type.Term("$bind_bagof_keys", [new pl.type.Var("Answers"),new pl.type.Var("_")]),new pl.type.Term(',', [new pl.type.Term("keygroup", [new pl.type.Var("Answers"),new pl.type.Var("KeyGroups")]),new pl.type.Term(',', [new pl.type.Term("keysort", [new pl.type.Var("KeyGroups"),new pl.type.Var("KeySorted")]),new pl.type.Term("$member", [new pl.type.Term("-", [new pl.type.Var("FV"),new pl.type.Var("Answer")]),new pl.type.Var("KeySorted")])])])])])]))
 		],
 
 		// '$setof'/3
 		"$setof/3": [
-			new pl.type.Rule(new pl.type.Term("$setof", [new pl.type.Var("Template"),new pl.type.Var("Goal0"),new pl.type.Var("Answer")]), new pl.type.Term(",", [new pl.type.Term("$free_variable_set", [new pl.type.Term("^", [new pl.type.Var("Template"),new pl.type.Var("Goal0")]),new pl.type.Var("Goal1"),new pl.type.Var("FV")]),new pl.type.Term(",", [new pl.type.Term("findall", [new pl.type.Term("-", [new pl.type.Var("FV"),new pl.type.Var("Template")]),new pl.type.Var("Goal1"),new pl.type.Var("Answers"),new pl.type.Term("[]", [])]),new pl.type.Term(",", [new pl.type.Term("$bind_bagof_keys", [new pl.type.Var("Answers"),new pl.type.Var("_")]),new pl.type.Term(",", [new pl.type.Term("keygroup", [new pl.type.Var("Answers"),new pl.type.Var("KeyGroups")]),new pl.type.Term(",", [new pl.type.Term("keysort", [new pl.type.Var("KeyGroups"),new pl.type.Var("KeySorted")]),new pl.type.Term(",", [new pl.type.Term("$member", [new pl.type.Term("-", [new pl.type.Var("FV"),new pl.type.Var("Unsorted")]),new pl.type.Var("KeySorted")]),new pl.type.Term("sort", [new pl.type.Var("Unsorted"),new pl.type.Var("Answer")])])])])])])]))
+			new pl.type.Rule(new pl.type.Term("$setof", [new pl.type.Var("Template"),new pl.type.Var("Goal0"),new pl.type.Var("Answer")]), new pl.type.Term(',', [new pl.type.Term("$free_variable_set", [new pl.type.Term("^", [new pl.type.Var("Template"),new pl.type.Var("Goal0")]),new pl.type.Var("Goal1"),new pl.type.Var("FV")]),new pl.type.Term(',', [new pl.type.Term("findall", [new pl.type.Term("-", [new pl.type.Var("FV"),new pl.type.Var("Template")]),new pl.type.Var("Goal1"),new pl.type.Var("Answers"),new pl.type.Term("[]", [])]),new pl.type.Term(',', [new pl.type.Term("$bind_bagof_keys", [new pl.type.Var("Answers"),new pl.type.Var("_")]),new pl.type.Term(',', [new pl.type.Term("keygroup", [new pl.type.Var("Answers"),new pl.type.Var("KeyGroups")]),new pl.type.Term(',', [new pl.type.Term("keysort", [new pl.type.Var("KeyGroups"),new pl.type.Var("KeySorted")]),new pl.type.Term(',', [new pl.type.Term("$member", [new pl.type.Term("-", [new pl.type.Var("FV"),new pl.type.Var("Unsorted")]),new pl.type.Var("KeySorted")]),new pl.type.Term("sort", [new pl.type.Var("Unsorted"),new pl.type.Var("Answer")])])])])])])]))
 		],
 
 		// '$if/3'
 		"$if/3": [
-			new pl.type.Rule(new pl.type.Term("$if", [new pl.type.Var("If"),new pl.type.Var("Then"),new pl.type.Var("Else")]), new pl.type.Term(";", [new pl.type.Term(",", [new pl.type.Term("call", [new pl.type.Var("If")]),new pl.type.Term(",", [new pl.type.Term("$push_global_stack", [new pl.type.Var("Stack"),new pl.type.Var("_")]),new pl.type.Term("call", [new pl.type.Var("Then")])])]),new pl.type.Term(",", [new pl.type.Term("$flush_global_stack", [new pl.type.Var("Stack"),new pl.type.Term("[]", []),new pl.type.Term("[]", [])]),new pl.type.Term("call", [new pl.type.Var("Else")])])]))
+			new pl.type.Rule(new pl.type.Term("$if", [new pl.type.Var("If"),new pl.type.Var("Then"),new pl.type.Var("Else")]), new pl.type.Term(";", [new pl.type.Term(',', [new pl.type.Term("call", [new pl.type.Var("If")]),new pl.type.Term(',', [new pl.type.Term("$push_global_stack", [new pl.type.Var("Stack"),new pl.type.Var("_")]),new pl.type.Term("call", [new pl.type.Var("Then")])])]),new pl.type.Term(',', [new pl.type.Term("$flush_global_stack", [new pl.type.Var("Stack"),new pl.type.Term("[]", []),new pl.type.Term("[]", [])]),new pl.type.Term("call", [new pl.type.Var("Else")])])]))
 		],
 
 
@@ -5327,7 +5327,7 @@
 					} else if( priority.value < 0 || priority.value > 1200 ) {
 						thread.throw_error( pl.error.domain( "operator_priority", priority, atom.indicator ) );
 						return;
-					} else if( operator.id === "," ) {
+					} else if( operator.id === ',' ) {
 						thread.throw_error( pl.error.permission( "modify", "operator", operator, atom.indicator ) );
 						return;
 					} else if( operator.id === "{}" ) {
@@ -5413,9 +5413,9 @@
 						for( var i = 0; i < thread.session.__operators[p][o].length; i++ )
 							points.push( new State(
 								point.goal.replace(
-									new Term( ",", [
+									new Term( ',', [
 										new Term( "=", [new Num( p, false ), priority] ),
-										new Term( ",", [
+										new Term( ',', [
 											new Term( "=", [new Term( thread.session.__operators[p][o][i], [] ), specifier] ),
 											new Term( "=", [new Term( o, [] ), operator] )
 										] )
@@ -5442,8 +5442,8 @@
 				var cond = left.indicator === ":/2" ? new Term(":", [context_left, new Term("call", [free_left.args[0]])]) : free_left.args[0];
 				var then = left.indicator === ":/2" ? new Term(":", [context_left, free_left.args[1]]) : free_left.args[1];
 				var otherwise = right;
-				var goal_fst = point.goal.replace(new Term( ",", [cond, new Term(",", [new Term("!"), then])] ) );
-				var goal_snd = point.goal.replace(new Term( ",", [new Term("!"), otherwise]));
+				var goal_fst = point.goal.replace(new Term( ',', [cond, new Term(',', [new Term("!"), then])] ) );
+				var goal_snd = point.goal.replace(new Term( ',', [new Term("!"), otherwise]));
 				thread.prepend([
 					new State(goal_fst, point.substitution, point),
 					new State(goal_snd, point.substitution, point)
@@ -5538,7 +5538,7 @@
 				// '\+'(X) :- call(X), !, fail.
 				// '\+'(_).
 				thread.prepend( [
-					new State( point.goal.replace( new Term( ",", [new Term( ",", [ new Term( "call", [goal] ), new Term( "!", [] ) ] ), new Term( "fail", [] ) ] ) ), point.substitution, point ),
+					new State( point.goal.replace( new Term( ',', [new Term( ',', [ new Term( "call", [goal] ), new Term( "!", [] ) ] ), new Term( "fail", [] ) ] ) ), point.substitution, point ),
 					new State( point.goal.replace( null ), point.substitution, point )
 				] );
 			}
@@ -5547,9 +5547,9 @@
 		// ->/2 (implication)
 		"->/2": function( thread, point, atom ) {
 			var cond = atom.args[0], then = atom.args[1];
-			var goal = point.goal.replace(new Term(",", [
+			var goal = point.goal.replace(new Term(',', [
 				new Term("call", [cond]),
-				new Term(",", [new Term("!"), then])
+				new Term(',', [new Term("!"), then])
 			]));
 			thread.prepend( [new State( goal, point.substitution, point )] );
 		},
@@ -5557,7 +5557,7 @@
 		// *->/2 (soft-cut)
 		"*->/2": function(thread, point, atom) {
 			var cond = atom.args[0], then = atom.args[1];
-			var goal = point.goal.replace(new Term(",", [
+			var goal = point.goal.replace(new Term(',', [
 				new Term("call", [cond]), then]));
 			thread.prepend([new State(goal, point.substitution, point)]);
 		},
@@ -5586,13 +5586,13 @@
 		// once/1
 		"once/1": function( thread, point, atom ) {
 			var goal = atom.args[0];
-			thread.prepend( [new State( point.goal.replace( new Term( ",", [new Term( "call", [goal] ), new Term( "!", [] )] ) ), point.substitution, point )] );
+			thread.prepend( [new State( point.goal.replace( new Term( ',', [new Term( "call", [goal] ), new Term( "!", [] )] ) ), point.substitution, point )] );
 		},
 		
 		// forall/2
 		"forall/2": function( thread, point, atom ) {
 			var generate = atom.args[0], test = atom.args[1];
-			thread.prepend( [new State( point.goal.replace( new Term( "\\+", [new Term( ",", [new Term( "call", [generate] ), new Term( "\\+", [new Term( "call", [test] )] )] )] ) ), point.substitution, point )] );
+			thread.prepend( [new State( point.goal.replace( new Term( "\\+", [new Term( ',', [new Term( "call", [generate] ), new Term( "\\+", [new Term( "call", [test] )] )] )] ) ), point.substitution, point )] );
 		},
 		
 		// repeat/0
@@ -5612,7 +5612,7 @@
 					var state = thread.points[i];
 					if(state.setup_call_cleanup_catch) {
 						thread.points = [new State(
-							new Term(",", [
+							new Term(',', [
 								new Term("catch", [
 									state.setup_call_cleanup_catch,
 									new Var("_"),
@@ -5705,7 +5705,7 @@
 							state.setup_call_cleanup_callback = callback;
 							thread.prepend([state]);
 						} else if(answer === false) {
-							var cleanup_and_fail = new Term(",", [
+							var cleanup_and_fail = new Term(',', [
 								new Term("call", [cleanup]),
 								new Term("fail")
 							]);
@@ -5716,7 +5716,7 @@
 							);
 							thread.prepend([state]);
 						} else if(pl.type.is_error(answer)) {
-							var cleanup_and_throw = new Term(",", [
+							var cleanup_and_throw = new Term(',', [
 								new Term("call", [cleanup]),
 								answer
 							]);
@@ -5775,7 +5775,7 @@
 				thread.throw_error(pl.error.type("callable", cleanup, atom.indicator));
 			} else {
 				thread.prepend([new State(
-					point.goal.replace(new Term(",", [
+					point.goal.replace(new Term(',', [
 						new Term("once", [setup]),
 						new Term("call_cleanup", [call, cleanup])
 					])),
@@ -5838,11 +5838,11 @@
 			thread.prepend([new State(
 				point.goal.replace(new Term("\\+", [
 					new Term("\\+", [
-						new Term(",", [
+						new Term(',', [
 							new Term("term_variables", [specific, vars1]),
-							new Term(",", [
+							new Term(',', [
 								new Term("unify_with_occurs_check", [general, specific]),
-								new Term(",", [
+								new Term(',', [
 									new Term("term_variables", [vars1, vars2]),
 									new Term("==", [vars1, vars2])
 								])
@@ -5954,7 +5954,7 @@
 			} else {
 				var id = pl.type.is_number( term ) ? term : new Term( term.id, [] );
 				var length = pl.type.is_number( term ) ? new Num( 0, false ) : new Num( term.args.length, false );
-				var goal = new Term( ",", [new Term( "=", [id, name] ), new Term( "=", [length, arity] )] );
+				var goal = new Term( ',', [new Term( "=", [id, name] ), new Term( "=", [length, arity] )] );
 				thread.prepend( [new State( point.goal.replace( goal ), point.substitution, point )] );
 			}
 		},
@@ -6073,7 +6073,7 @@
 				var value = start.value;
 				var unif_body = new Term("true");
 				for(var i = 0; i < variables.length; i++) {
-					unif_body = new Term(",", [
+					unif_body = new Term(',', [
 						new Term("=", [
 							new Var(variables[i]),
 							new Term("$VAR", [new Num(value, false)])]),
@@ -6083,7 +6083,7 @@
 				var unif_end = new Term("=", [end, new Num(value, false)]);
 				if(pl.type.is_variable(end) || end.value === value) {
 					thread.prepend([new State(
-						point.goal.replace(new Term(",", [unif_body, unif_end])),
+						point.goal.replace(new Term(',', [unif_body, unif_end])),
 						point.substitution,
 						point
 					)]);
@@ -6127,7 +6127,7 @@
 						rule = rule.rename(thread);
 						if(rule.body === null)
 							rule.body = new Term("true");
-						var goal = new Term(",", [
+						var goal = new Term(',', [
 							new Term("=", [rule.head, head]),
 							new Term("=", [rule.body, body])
 						]);
@@ -6247,7 +6247,7 @@
 							for(var i = 0; i < current_properties.length; i++) {
 								if(pl.type.is_variable(property) || current_properties[i].indicator === property.indicator) {
 									points.push(new State(
-										point.goal.replace(new Term(",", [
+										point.goal.replace(new Term(',', [
 											new Term("=", [head, unif_head]),
 											new Term("=", [property, current_properties[i]])
 										])),
@@ -6285,7 +6285,7 @@
 							for(var i = 0; i < current_properties.length; i++) {
 								if(pl.type.is_variable(property) || current_properties[i].indicator === property.indicator) {
 									points.push(new State(
-										point.goal.replace(new Term(",", [
+										point.goal.replace(new Term(',', [
 											new Term("=", [head, unif_head]),
 											new Term("=", [property, current_properties[i]])
 										])),
@@ -6332,7 +6332,7 @@
 						for(var i = 0; i < current_properties.length; i++) {
 							if(pl.type.is_variable(property) || current_properties[i].indicator === property.indicator) {
 								points.push(new State(
-									point.goal.replace(new Term(",", [
+									point.goal.replace(new Term(',', [
 										new Term("=", [head, unif_head]),
 										new Term("=", [property, current_properties[i]])
 									])),
@@ -6725,15 +6725,15 @@
 								if(rule.body === null)
 									rule.body = new Term("true", []);
 								var occurs_check = thread.get_flag("occurs_check").indicator === "true/0";
-								var mgu = pl.unify(new Term(",", [head, body]), new Term(",", [rule.head, rule.body]), occurs_check);
+								var mgu = pl.unify(new Term(',', [head, body]), new Term(',', [rule.head, rule.body]), occurs_check);
 								if(mgu !== null) {
 									var state = new State(
-										point.goal.replace(new Term(",", [
+										point.goal.replace(new Term(',', [
 											new Term(":", [
 												module_atom,
 												new Term("retract", [new Term(":-", [head, body])]),
 											]),
-											new Term(",", [
+											new Term(',', [
 												new Term("=", [head, rule.head]),
 												new Term("=", [body, rule.body])
 											])
@@ -6771,7 +6771,7 @@
 				thread.throw_error(pl.error.permission("modify", "static_procedure", str_indicator(head.indicator), atom.indicator));
 			} else {
 				thread.prepend([
-					new State(point.goal.replace(new Term(",", [
+					new State(point.goal.replace(new Term(',', [
 						new Term(":", [
 							new Term(context_module),
 							new Term("retract", [new pl.type.Term(":-", [head, new Var("_")])])
@@ -6885,7 +6885,7 @@
 					for( var i = 0; i <= whole.id.length; i++ ) {
 						var atom1 = new Term( whole.id.substr( 0, i ) );
 						var atom2 = new Term( whole.id.substr( i ) );
-						goal = new Term( ",", [new Term( "=", [atom1, start] ), new Term( "=", [atom2, end] )] );
+						goal = new Term( ',', [new Term( "=", [atom1, start] ), new Term( "=", [atom2, end] )] );
 						states.push( new State( point.goal.replace( goal ), point.substitution, point ) );
 					}
 					thread.prepend( states );
@@ -6953,7 +6953,7 @@
 									var pl2 = new Term( "=", [before, new Num( i )] );
 									var pl3 = new Term( "=", [length, new Num( j )] );
 									var pl4 = new Term( "=", [after, new Num( k )] );
-									var goal = new Term( ",", [ new Term( ",", [ new Term( ",", [pl2, pl3] ), pl4] ), pl1] );
+									var goal = new Term( ',', [ new Term( ',', [ new Term( ',', [pl2, pl3] ), pl4] ), pl1] );
 									states.push( new State( point.goal.replace( goal ), point.substitution, point ) );
 								}
 							}
@@ -7823,7 +7823,7 @@
 
 		// flush_output/0
 		"flush_output/0": [
-			new Rule(new Term("flush_output", []), new Term(",", [new Term("current_output", [new Var("S")]),new Term("flush_output", [new Var("S")])]))
+			new Rule(new Term("flush_output", []), new Term(',', [new Term("current_output", [new Var("S")]),new Term("flush_output", [new Var("S")])]))
 		],
 
 		// flush_output/1
@@ -7903,7 +7903,7 @@
 						properties.push( new Term( "type", [new Term(streams[i].type, [])] ) );
 					for( var j = 0; j < properties.length; j++ ) {
 						states.push( new State(
-							point.goal.replace( new Term( ",", [
+							point.goal.replace( new Term( ',', [
 								new Term("=", [pl.type.is_variable( stream ) ? stream : stream2, streams[i]]),
 								new Term("=", [property, properties[j]])]) ),
 							point.substitution,
@@ -7933,7 +7933,7 @@
 				if(pl.type.is_variable(field)) {
 					for(var i = 0; i < fields.length; i++) {
 						states.push(new State(point.goal.replace(
-							new Term(",", [
+							new Term(',', [
 								new Term("=", [new Term(fields[i]), field]),
 								new Term("=", [value, position.args[data_pos[fields[i]]]])
 							])
@@ -7950,7 +7950,7 @@
 
 		// at_end_of_stream/0
 		"at_end_of_stream/0": [
-			new Rule(new Term("at_end_of_stream", []), new pl.type.Term(",", [new Term("current_input", [new Var("S")]),new Term(",", [new Term("stream_property", [new Var("S"),new Term("end_of_stream", [new Var("E")])]),new Term(",", [new Term("!", []),new Term(";", [new Term("=", [new Var("E"),new Term("at", [])]),new Term("=", [new Var("E"),new Term("past", [])])])])])]))
+			new Rule(new Term("at_end_of_stream", []), new pl.type.Term(',', [new Term("current_input", [new Var("S")]),new Term(',', [new Term("stream_property", [new Var("S"),new Term("end_of_stream", [new Var("E")])]),new Term(',', [new Term("!", []),new Term(";", [new Term("=", [new Var("E"),new Term("at", [])]),new Term("=", [new Var("E"),new Term("past", [])])])])])]))
 		],
 
 		// at_end_of_stream/1
@@ -7965,8 +7965,8 @@
 				var e = thread.next_free_variable();
 				thread.prepend( [new State(
 					point.goal.replace(
-						new Term(",", [new Term("stream_property", [stream2,new Term("end_of_stream", [e])]),
-						new Term(",", [new Term("!", []),new Term(";", [new Term("=", [e,new Term("at", [])]),
+						new Term(',', [new Term("stream_property", [stream2,new Term("end_of_stream", [e])]),
+						new Term(',', [new Term("!", []),new Term(";", [new Term("=", [e,new Term("at", [])]),
 						new Term("=", [e,new Term("past", [])])])])])
 					),
 					point.substitution,
@@ -8008,7 +8008,7 @@
 		
 		// get_char/1
 		"get_char/1": [
-			new Rule(new Term("get_char", [new Var("C")]), new Term(",", [new Term("current_input", [new Var("S")]),new Term("get_char", [new Var("S"),new Var("C")])]))
+			new Rule(new Term("get_char", [new Var("C")]), new Term(',', [new Term("current_input", [new Var("S")]),new Term("get_char", [new Var("S"),new Var("C")])]))
 		],
 
 		// get_char/2
@@ -8065,7 +8065,7 @@
 
 		// get_code/1
 		"get_code/1": [
-			new Rule(new Term("get_code", [new Var("C")]), new Term(",", [new Term("current_input", [new Var("S")]),new Term("get_code", [new Var("S"),new Var("C")])]))
+			new Rule(new Term("get_code", [new Var("C")]), new Term(',', [new Term("current_input", [new Var("S")]),new Term("get_code", [new Var("S"),new Var("C")])]))
 		],
 
 		// get_code/2
@@ -8125,7 +8125,7 @@
 
 		// peek_char/1
 		"peek_char/1": [
-			new Rule(new Term("peek_char", [new Var("C")]), new Term(",", [new Term("current_input", [new Var("S")]),new Term("peek_char", [new Var("S"),new Var("C")])]))
+			new Rule(new Term("peek_char", [new Var("C")]), new Term(',', [new Term("current_input", [new Var("S")]),new Term("peek_char", [new Var("S"),new Var("C")])]))
 		],
 
 		// peek_char/2
@@ -8173,7 +8173,7 @@
 
 		// peek_code/1
 		"peek_code/1": [
-			new Rule(new Term("peek_code", [new Var("C")]), new Term(",", [new Term("current_input", [new Var("S")]),new Term("peek_code", [new Var("S"),new Var("C")])]))
+			new Rule(new Term("peek_code", [new Var("C")]), new Term(',', [new Term("current_input", [new Var("S")]),new Term("peek_code", [new Var("S"),new Var("C")])]))
 		],
 
 		// peek_code/2
@@ -8222,7 +8222,7 @@
 
 		// put_char/1
 		"put_char/1": [
-			new Rule(new Term("put_char", [new Var("C")]), new Term(",", [new Term("current_output", [new Var("S")]),new Term("put_char", [new Var("S"),new Var("C")])]))
+			new Rule(new Term("put_char", [new Var("C")]), new Term(',', [new Term("current_output", [new Var("S")]),new Term("put_char", [new Var("S"),new Var("C")])]))
 		],
 
 		// put_char/2
@@ -8258,7 +8258,7 @@
 
 		// put_code/1
 		"put_code/1": [
-			new Rule(new Term("put_code", [new Var("C")]), new Term(",", [new Term("current_output", [new Var("S")]),new Term("put_code", [new Var("S"),new Var("C")])]))
+			new Rule(new Term("put_code", [new Var("C")]), new Term(',', [new Term("current_output", [new Var("S")]),new Term("put_code", [new Var("S"),new Var("C")])]))
 		],
 
 		// put_code/2
@@ -8296,7 +8296,7 @@
 
 		// nl/0
 		"nl/0": [
-			new Rule(new Term("nl"), new Term(",", [new Term("current_output", [new Var("S")]),new Term("put_char", [new Var("S"),new Term("\n")])]))
+			new Rule(new Term("nl"), new Term(',', [new Term("current_output", [new Var("S")]),new Term("put_char", [new Var("S"),new Term("\n")])]))
 		],
 
 		// nl/1
@@ -8315,7 +8315,7 @@
 
 		// get_byte/1
 		"get_byte/1": [
-			new Rule(new Term("get_byte", [new Var("B")]), new Term(",", [new Term("current_input", [new Var("S")]),new Term("get_byte", [new Var("S"),new Var("B")])]))
+			new Rule(new Term("get_byte", [new Var("B")]), new Term(',', [new Term("current_input", [new Var("S")]),new Term("get_byte", [new Var("S"),new Var("B")])]))
 		],
 
 		// get_byte/2
@@ -8365,7 +8365,7 @@
 		
 		// peek_byte/1
 		"peek_byte/1": [
-			new Rule(new Term("peek_byte", [new Var("B")]), new Term(",", [new Term("current_input", [new Var("S")]),new Term("peek_byte", [new Var("S"),new Var("B")])]))
+			new Rule(new Term("peek_byte", [new Var("B")]), new Term(',', [new Term("current_input", [new Var("S")]),new Term("peek_byte", [new Var("S"),new Var("B")])]))
 		],
 
 		// peek_byte/2
@@ -8410,7 +8410,7 @@
 
 		// put_byte/1
 		"put_byte/1": [
-			new Rule(new Term("put_byte", [new Var("B")]), new Term(",", [new Term("current_output", [new Var("S")]),new Term("put_byte", [new Var("S"),new Var("B")])]))
+			new Rule(new Term("put_byte", [new Var("B")]), new Term(',', [new Term("current_output", [new Var("S")]),new Term("put_byte", [new Var("S"),new Var("B")])]))
 		],
 
 		// put_byte/2
@@ -8446,7 +8446,7 @@
 
 		// read/1
 		"read/1": [
-			new Rule(new Term("read", [new Var("T")]), new Term(",", [new Term("current_input", [new Var("S")]),new Term("read_term", [new Var("S"),new Var("T"),new Term("[]")])]))
+			new Rule(new Term("read", [new Var("T")]), new Term(',', [new Term("current_input", [new Var("S")]),new Term("read_term", [new Var("S"),new Var("T"),new Term("[]")])]))
 		],
 
 		// read/2
@@ -8456,7 +8456,7 @@
 
 		// read_term/2
 		"read_term/2": [
-			new Rule(new Term("read_term", [new Var("T"),new Var("O")]), new Term(",", [new Term("current_input", [new Var("S")]),new Term("read_term", [new Var("S"),new Var("T"),new Var("O")])]))
+			new Rule(new Term("read_term", [new Var("T"),new Var("O")]), new Term(',', [new Term("current_input", [new Var("S")]),new Term("read_term", [new Var("S"),new Var("T"),new Var("O")])]))
 		],
 
 		// read_term/3
@@ -8582,7 +8582,7 @@
 						// Variables
 						if( obj_options.variables ) {
 							var vars = arrayToList( map( nub( expr.variables() ), function(v) { return new Var(v); } ) );
-							eq = new Term( ",", [eq, new Term( "=", [obj_options.variables, vars] )] )
+							eq = new Term( ',', [eq, new Term( "=", [obj_options.variables, vars] )] )
 						}
 						// Variable names
 						if( obj_options.variable_names ) {
@@ -8600,7 +8600,7 @@
 								}
 							}
 							plvars = arrayToList(plvars);
-							eq = new Term( ",", [eq, new Term( "=", [obj_options.variable_names, plvars] )] );
+							eq = new Term( ',', [eq, new Term( "=", [obj_options.variable_names, plvars] )] );
 						}
 						// Singletons
 						if( obj_options.singletons ) {
@@ -8618,7 +8618,7 @@
 								}
 							}
 							plvars = arrayToList(plvars);
-							eq = new Term( ",", [eq, new Term( "=", [obj_options.singletons, plvars] )] );
+							eq = new Term( ',', [eq, new Term( "=", [obj_options.singletons, plvars] )] );
 						}
 						thread.prepend( [new State( point.goal.replace( eq ), point.substitution, point )] );
 					// Failed analyzing term
@@ -8634,7 +8634,7 @@
 
 		// write/1
 		"write/1": [
-			new Rule(new Term("write", [new Var("T")]), new Term(",", [new Term("current_output", [new Var("S")]),new Term("write", [new Var("S"),new Var("T")])]))
+			new Rule(new Term("write", [new Var("T")]), new Term(',', [new Term("current_output", [new Var("S")]),new Term("write", [new Var("S"),new Var("T")])]))
 		],
 		
 		// write/2
@@ -8652,7 +8652,7 @@
 		
 		// writeq/1
 		"writeq/1": [
-			new Rule(new Term("writeq", [new Var("T")]), new Term(",", [new Term("current_output", [new Var("S")]),new Term("writeq", [new Var("S"),new Var("T")])]))
+			new Rule(new Term("writeq", [new Var("T")]), new Term(',', [new Term("current_output", [new Var("S")]),new Term("writeq", [new Var("S"),new Var("T")])]))
 		],
 		
 		// writeq/2
@@ -8670,7 +8670,7 @@
 		
 		// write_canonical/1
 		"write_canonical/1": [
-			new Rule(new Term("write_canonical", [new Var("T")]), new Term(",", [new Term("current_output", [new Var("S")]),new Term("write_canonical", [new Var("S"),new Var("T")])]))
+			new Rule(new Term("write_canonical", [new Var("T")]), new Term(',', [new Term("current_output", [new Var("S")]),new Term("write_canonical", [new Var("S"),new Var("T")])]))
 		],
 		
 		// write_canonical/2
@@ -8688,7 +8688,7 @@
 
 		// write_term/2
 		"write_term/2": [
-			new Rule(new Term("write_term", [new Var("T"),new Var("O")]), new Term(",", [new Term("current_output", [new Var("S")]),new Term("write_term", [new Var("S"),new Var("T"),new Var("O")])]))
+			new Rule(new Term("write_term", [new Var("T"),new Var("O")]), new Term(',', [new Term("current_output", [new Var("S")]),new Term("write_term", [new Var("S"),new Var("T"),new Var("O")])]))
 		],
 		
 		// write_term/3
@@ -8787,7 +8787,7 @@
 				var states = [];
 				for( var name in pl.flag ) {
 					if(!pl.flag.hasOwnProperty(name)) continue;
-					var goal = new Term( ",", [new Term( "=", [new Term( name ), flag] ), new Term( "=", [thread.get_flag(name), value] )] );
+					var goal = new Term( ',', [new Term( "=", [new Term( name ), flag] ), new Term( "=", [thread.get_flag(name), value] )] );
 					states.push( new State( point.goal.replace( goal ), point.substitution, point ) );
 				}
 				thread.prepend( states );
@@ -8981,7 +8981,7 @@
 				goal.value = new Term(":", [new Term(context_module), new Term("call", [goal.value])]);
 				if(goal !== null) {
 					thread.prepend( [new State(
-						point.goal.replace( new Term( ",", [goal.value, new Term("=", [goal.variable, s])] ) ), 
+						point.goal.replace( new Term( ',', [goal.value, new Term("=", [goal.variable, s])] ) ), 
 						point.substitution,
 						point
 					)] );
@@ -9144,87 +9144,87 @@ var pl;
 			// permutation/2
 			"permutation/2": [
 				new pl.type.Rule(new pl.type.Term("permutation", [new pl.type.Term("[]", []),new pl.type.Term("[]", [])]), null),
-				new pl.type.Rule(new pl.type.Term("permutation", [new pl.type.Term(".", [new pl.type.Var("H"),new pl.type.Var("T")]),new pl.type.Var("S")]), new pl.type.Term(",", [new pl.type.Term("permutation", [new pl.type.Var("T"),new pl.type.Var("P")]),new pl.type.Term(",", [new pl.type.Term("append", [new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("P")]),new pl.type.Term("append", [new pl.type.Var("X"),new pl.type.Term(".", [new pl.type.Var("H"),new pl.type.Var("Y")]),new pl.type.Var("S")])])]))
+				new pl.type.Rule(new pl.type.Term("permutation", [new pl.type.Term(".", [new pl.type.Var("H"),new pl.type.Var("T")]),new pl.type.Var("S")]), new pl.type.Term(',', [new pl.type.Term("permutation", [new pl.type.Var("T"),new pl.type.Var("P")]),new pl.type.Term(',', [new pl.type.Term("append", [new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("P")]),new pl.type.Term("append", [new pl.type.Var("X"),new pl.type.Term(".", [new pl.type.Var("H"),new pl.type.Var("Y")]),new pl.type.Var("S")])])]))
 			],
 			
 			// maplist/2
 			"maplist/2": [
 				new pl.type.Rule(new pl.type.Term("maplist", [new pl.type.Var("_"),new pl.type.Term("[]", [])]), null),
-				new pl.type.Rule(new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("Xs")])]), new pl.type.Term(",", [new pl.type.Term("call", [new pl.type.Var("P"),new pl.type.Var("X")]),new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Var("Xs")])]))
+				new pl.type.Rule(new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("Xs")])]), new pl.type.Term(',', [new pl.type.Term("call", [new pl.type.Var("P"),new pl.type.Var("X")]),new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Var("Xs")])]))
 			],
 			
 			// maplist/3
 			"maplist/3": [
 				new pl.type.Rule(new pl.type.Term("maplist", [new pl.type.Var("_"),new pl.type.Term("[]", []),new pl.type.Term("[]", [])]), null),
-				new pl.type.Rule(new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Term(".", [new pl.type.Var("A"),new pl.type.Var("As")]),new pl.type.Term(".", [new pl.type.Var("B"),new pl.type.Var("Bs")])]), new pl.type.Term(",", [new pl.type.Term("call", [new pl.type.Var("P"),new pl.type.Var("A"),new pl.type.Var("B")]),new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Var("As"),new pl.type.Var("Bs")])]))
+				new pl.type.Rule(new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Term(".", [new pl.type.Var("A"),new pl.type.Var("As")]),new pl.type.Term(".", [new pl.type.Var("B"),new pl.type.Var("Bs")])]), new pl.type.Term(',', [new pl.type.Term("call", [new pl.type.Var("P"),new pl.type.Var("A"),new pl.type.Var("B")]),new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Var("As"),new pl.type.Var("Bs")])]))
 			],
 			
 			// maplist/4
 			"maplist/4": [
 				new pl.type.Rule(new pl.type.Term("maplist", [new pl.type.Var("_"),new pl.type.Term("[]", []),new pl.type.Term("[]", []),new pl.type.Term("[]", [])]), null),
-				new pl.type.Rule(new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Term(".", [new pl.type.Var("A"),new pl.type.Var("As")]),new pl.type.Term(".", [new pl.type.Var("B"),new pl.type.Var("Bs")]),new pl.type.Term(".", [new pl.type.Var("C"),new pl.type.Var("Cs")])]), new pl.type.Term(",", [new pl.type.Term("call", [new pl.type.Var("P"),new pl.type.Var("A"),new pl.type.Var("B"),new pl.type.Var("C")]),new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Var("As"),new pl.type.Var("Bs"),new pl.type.Var("Cs")])]))
+				new pl.type.Rule(new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Term(".", [new pl.type.Var("A"),new pl.type.Var("As")]),new pl.type.Term(".", [new pl.type.Var("B"),new pl.type.Var("Bs")]),new pl.type.Term(".", [new pl.type.Var("C"),new pl.type.Var("Cs")])]), new pl.type.Term(',', [new pl.type.Term("call", [new pl.type.Var("P"),new pl.type.Var("A"),new pl.type.Var("B"),new pl.type.Var("C")]),new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Var("As"),new pl.type.Var("Bs"),new pl.type.Var("Cs")])]))
 			],
 			
 			// maplist/5
 			"maplist/5": [
 				new pl.type.Rule(new pl.type.Term("maplist", [new pl.type.Var("_"),new pl.type.Term("[]", []),new pl.type.Term("[]", []),new pl.type.Term("[]", []),new pl.type.Term("[]", [])]), null),
-				new pl.type.Rule(new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Term(".", [new pl.type.Var("A"),new pl.type.Var("As")]),new pl.type.Term(".", [new pl.type.Var("B"),new pl.type.Var("Bs")]),new pl.type.Term(".", [new pl.type.Var("C"),new pl.type.Var("Cs")]),new pl.type.Term(".", [new pl.type.Var("D"),new pl.type.Var("Ds")])]), new pl.type.Term(",", [new pl.type.Term("call", [new pl.type.Var("P"),new pl.type.Var("A"),new pl.type.Var("B"),new pl.type.Var("C"),new pl.type.Var("D")]),new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Var("As"),new pl.type.Var("Bs"),new pl.type.Var("Cs"),new pl.type.Var("Ds")])]))
+				new pl.type.Rule(new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Term(".", [new pl.type.Var("A"),new pl.type.Var("As")]),new pl.type.Term(".", [new pl.type.Var("B"),new pl.type.Var("Bs")]),new pl.type.Term(".", [new pl.type.Var("C"),new pl.type.Var("Cs")]),new pl.type.Term(".", [new pl.type.Var("D"),new pl.type.Var("Ds")])]), new pl.type.Term(',', [new pl.type.Term("call", [new pl.type.Var("P"),new pl.type.Var("A"),new pl.type.Var("B"),new pl.type.Var("C"),new pl.type.Var("D")]),new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Var("As"),new pl.type.Var("Bs"),new pl.type.Var("Cs"),new pl.type.Var("Ds")])]))
 			],
 			
 			// maplist/6
 			"maplist/6": [
 				new pl.type.Rule(new pl.type.Term("maplist", [new pl.type.Var("_"),new pl.type.Term("[]", []),new pl.type.Term("[]", []),new pl.type.Term("[]", []),new pl.type.Term("[]", []),new pl.type.Term("[]", [])]), null),
-				new pl.type.Rule(new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Term(".", [new pl.type.Var("A"),new pl.type.Var("As")]),new pl.type.Term(".", [new pl.type.Var("B"),new pl.type.Var("Bs")]),new pl.type.Term(".", [new pl.type.Var("C"),new pl.type.Var("Cs")]),new pl.type.Term(".", [new pl.type.Var("D"),new pl.type.Var("Ds")]),new pl.type.Term(".", [new pl.type.Var("E"),new pl.type.Var("Es")])]), new pl.type.Term(",", [new pl.type.Term("call", [new pl.type.Var("P"),new pl.type.Var("A"),new pl.type.Var("B"),new pl.type.Var("C"),new pl.type.Var("D"),new pl.type.Var("E")]),new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Var("As"),new pl.type.Var("Bs"),new pl.type.Var("Cs"),new pl.type.Var("Ds"),new pl.type.Var("Es")])]))
+				new pl.type.Rule(new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Term(".", [new pl.type.Var("A"),new pl.type.Var("As")]),new pl.type.Term(".", [new pl.type.Var("B"),new pl.type.Var("Bs")]),new pl.type.Term(".", [new pl.type.Var("C"),new pl.type.Var("Cs")]),new pl.type.Term(".", [new pl.type.Var("D"),new pl.type.Var("Ds")]),new pl.type.Term(".", [new pl.type.Var("E"),new pl.type.Var("Es")])]), new pl.type.Term(',', [new pl.type.Term("call", [new pl.type.Var("P"),new pl.type.Var("A"),new pl.type.Var("B"),new pl.type.Var("C"),new pl.type.Var("D"),new pl.type.Var("E")]),new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Var("As"),new pl.type.Var("Bs"),new pl.type.Var("Cs"),new pl.type.Var("Ds"),new pl.type.Var("Es")])]))
 			],
 			
 			// maplist/7
 			"maplist/7": [
 				new pl.type.Rule(new pl.type.Term("maplist", [new pl.type.Var("_"),new pl.type.Term("[]", []),new pl.type.Term("[]", []),new pl.type.Term("[]", []),new pl.type.Term("[]", []),new pl.type.Term("[]", []),new pl.type.Term("[]", [])]), null),
-				new pl.type.Rule(new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Term(".", [new pl.type.Var("A"),new pl.type.Var("As")]),new pl.type.Term(".", [new pl.type.Var("B"),new pl.type.Var("Bs")]),new pl.type.Term(".", [new pl.type.Var("C"),new pl.type.Var("Cs")]),new pl.type.Term(".", [new pl.type.Var("D"),new pl.type.Var("Ds")]),new pl.type.Term(".", [new pl.type.Var("E"),new pl.type.Var("Es")]),new pl.type.Term(".", [new pl.type.Var("F"),new pl.type.Var("Fs")])]), new pl.type.Term(",", [new pl.type.Term("call", [new pl.type.Var("P"),new pl.type.Var("A"),new pl.type.Var("B"),new pl.type.Var("C"),new pl.type.Var("D"),new pl.type.Var("E"),new pl.type.Var("F")]),new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Var("As"),new pl.type.Var("Bs"),new pl.type.Var("Cs"),new pl.type.Var("Ds"),new pl.type.Var("Es"),new pl.type.Var("Fs")])]))
+				new pl.type.Rule(new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Term(".", [new pl.type.Var("A"),new pl.type.Var("As")]),new pl.type.Term(".", [new pl.type.Var("B"),new pl.type.Var("Bs")]),new pl.type.Term(".", [new pl.type.Var("C"),new pl.type.Var("Cs")]),new pl.type.Term(".", [new pl.type.Var("D"),new pl.type.Var("Ds")]),new pl.type.Term(".", [new pl.type.Var("E"),new pl.type.Var("Es")]),new pl.type.Term(".", [new pl.type.Var("F"),new pl.type.Var("Fs")])]), new pl.type.Term(',', [new pl.type.Term("call", [new pl.type.Var("P"),new pl.type.Var("A"),new pl.type.Var("B"),new pl.type.Var("C"),new pl.type.Var("D"),new pl.type.Var("E"),new pl.type.Var("F")]),new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Var("As"),new pl.type.Var("Bs"),new pl.type.Var("Cs"),new pl.type.Var("Ds"),new pl.type.Var("Es"),new pl.type.Var("Fs")])]))
 			],
 			
 			// maplist/8
 			"maplist/8": [
 				new pl.type.Rule(new pl.type.Term("maplist", [new pl.type.Var("_"),new pl.type.Term("[]", []),new pl.type.Term("[]", []),new pl.type.Term("[]", []),new pl.type.Term("[]", []),new pl.type.Term("[]", []),new pl.type.Term("[]", []),new pl.type.Term("[]", [])]), null),
-				new pl.type.Rule(new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Term(".", [new pl.type.Var("A"),new pl.type.Var("As")]),new pl.type.Term(".", [new pl.type.Var("B"),new pl.type.Var("Bs")]),new pl.type.Term(".", [new pl.type.Var("C"),new pl.type.Var("Cs")]),new pl.type.Term(".", [new pl.type.Var("D"),new pl.type.Var("Ds")]),new pl.type.Term(".", [new pl.type.Var("E"),new pl.type.Var("Es")]),new pl.type.Term(".", [new pl.type.Var("F"),new pl.type.Var("Fs")]),new pl.type.Term(".", [new pl.type.Var("G"),new pl.type.Var("Gs")])]), new pl.type.Term(",", [new pl.type.Term("call", [new pl.type.Var("P"),new pl.type.Var("A"),new pl.type.Var("B"),new pl.type.Var("C"),new pl.type.Var("D"),new pl.type.Var("E"),new pl.type.Var("F"),new pl.type.Var("G")]),new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Var("As"),new pl.type.Var("Bs"),new pl.type.Var("Cs"),new pl.type.Var("Ds"),new pl.type.Var("Es"),new pl.type.Var("Fs"),new pl.type.Var("Gs")])]))
+				new pl.type.Rule(new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Term(".", [new pl.type.Var("A"),new pl.type.Var("As")]),new pl.type.Term(".", [new pl.type.Var("B"),new pl.type.Var("Bs")]),new pl.type.Term(".", [new pl.type.Var("C"),new pl.type.Var("Cs")]),new pl.type.Term(".", [new pl.type.Var("D"),new pl.type.Var("Ds")]),new pl.type.Term(".", [new pl.type.Var("E"),new pl.type.Var("Es")]),new pl.type.Term(".", [new pl.type.Var("F"),new pl.type.Var("Fs")]),new pl.type.Term(".", [new pl.type.Var("G"),new pl.type.Var("Gs")])]), new pl.type.Term(',', [new pl.type.Term("call", [new pl.type.Var("P"),new pl.type.Var("A"),new pl.type.Var("B"),new pl.type.Var("C"),new pl.type.Var("D"),new pl.type.Var("E"),new pl.type.Var("F"),new pl.type.Var("G")]),new pl.type.Term("maplist", [new pl.type.Var("P"),new pl.type.Var("As"),new pl.type.Var("Bs"),new pl.type.Var("Cs"),new pl.type.Var("Ds"),new pl.type.Var("Es"),new pl.type.Var("Fs"),new pl.type.Var("Gs")])]))
 			],
 			
 			// include/3
 			"include/3": [
 				new pl.type.Rule(new pl.type.Term("include", [new pl.type.Var("_"),new pl.type.Term("[]", []),new pl.type.Term("[]", [])]), null),
-				new pl.type.Rule(new pl.type.Term("include", [new pl.type.Var("P"),new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("Xs")]),new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("S")])]), new pl.type.Term(",", [new pl.type.Term("call", [new pl.type.Var("P"),new pl.type.Var("X")]),new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("include", [new pl.type.Var("P"),new pl.type.Var("Xs"),new pl.type.Var("S")])])])),
+				new pl.type.Rule(new pl.type.Term("include", [new pl.type.Var("P"),new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("Xs")]),new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("S")])]), new pl.type.Term(',', [new pl.type.Term("call", [new pl.type.Var("P"),new pl.type.Var("X")]),new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("include", [new pl.type.Var("P"),new pl.type.Var("Xs"),new pl.type.Var("S")])])])),
 				new pl.type.Rule(new pl.type.Term("include", [new pl.type.Var("P"),new pl.type.Term(".", [new pl.type.Var("_"),new pl.type.Var("Xs")]),new pl.type.Var("S")]), new pl.type.Term("include", [new pl.type.Var("P"),new pl.type.Var("Xs"),new pl.type.Var("S")]))
 			],
 			
 			// exclude/3
 			"exclude/3": [
 				new pl.type.Rule(new pl.type.Term("exclude", [new pl.type.Var("_"),new pl.type.Term("[]", []),new pl.type.Term("[]", [])]), null),
-				new pl.type.Rule(new pl.type.Term("exclude", [new pl.type.Var("P"),new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("Xs")]),new pl.type.Var("S")]), new pl.type.Term(",", [new pl.type.Term("call", [new pl.type.Var("P"),new pl.type.Var("X")]),new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("exclude", [new pl.type.Var("P"),new pl.type.Var("Xs"),new pl.type.Var("S")])])])),
+				new pl.type.Rule(new pl.type.Term("exclude", [new pl.type.Var("P"),new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("Xs")]),new pl.type.Var("S")]), new pl.type.Term(',', [new pl.type.Term("call", [new pl.type.Var("P"),new pl.type.Var("X")]),new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("exclude", [new pl.type.Var("P"),new pl.type.Var("Xs"),new pl.type.Var("S")])])])),
 				new pl.type.Rule(new pl.type.Term("exclude", [new pl.type.Var("P"),new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("Xs")]),new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("S")])]), new pl.type.Term("exclude", [new pl.type.Var("P"),new pl.type.Var("Xs"),new pl.type.Var("S")]))
 			],
 			
 			// foldl/4
 			"foldl/4": [
 				new pl.type.Rule(new pl.type.Term("foldl", [new pl.type.Var("_"),new pl.type.Term("[]", []),new pl.type.Var("V"),new pl.type.Var("V")]), null),
-				new pl.type.Rule(new pl.type.Term("foldl", [new pl.type.Var("Goal"),new pl.type.Term(".", [new pl.type.Var("H"),new pl.type.Var("T")]),new pl.type.Var("V0"),new pl.type.Var("V")]), new pl.type.Term(",", [new pl.type.Term("call", [new pl.type.Var("Goal"),new pl.type.Var("H"),new pl.type.Var("V0"),new pl.type.Var("V1")]),new pl.type.Term("foldl", [new pl.type.Var("Goal"),new pl.type.Var("T"),new pl.type.Var("V1"),new pl.type.Var("V")])]))
+				new pl.type.Rule(new pl.type.Term("foldl", [new pl.type.Var("Goal"),new pl.type.Term(".", [new pl.type.Var("H"),new pl.type.Var("T")]),new pl.type.Var("V0"),new pl.type.Var("V")]), new pl.type.Term(',', [new pl.type.Term("call", [new pl.type.Var("Goal"),new pl.type.Var("H"),new pl.type.Var("V0"),new pl.type.Var("V1")]),new pl.type.Term("foldl", [new pl.type.Var("Goal"),new pl.type.Var("T"),new pl.type.Var("V1"),new pl.type.Var("V")])]))
 			],
 			
 			// foldl/5
 			"foldl/5": [
 				new pl.type.Rule(new pl.type.Term("foldl", [new pl.type.Var("_"),new pl.type.Term("[]", []),new pl.type.Term("[]", []),new pl.type.Var("V"),new pl.type.Var("V")]), null),
-				new pl.type.Rule(new pl.type.Term("foldl", [new pl.type.Var("Goal"),new pl.type.Term(".", [new pl.type.Var("H1"),new pl.type.Var("T1")]),new pl.type.Term(".", [new pl.type.Var("H2"),new pl.type.Var("T2")]),new pl.type.Var("V0"),new pl.type.Var("V")]), new pl.type.Term(",", [new pl.type.Term("call", [new pl.type.Var("Goal"),new pl.type.Var("H1"),new pl.type.Var("H2"),new pl.type.Var("V0"),new pl.type.Var("V1")]),new pl.type.Term("foldl", [new pl.type.Var("Goal"),new pl.type.Var("T1"),new pl.type.Var("T2"),new pl.type.Var("V1"),new pl.type.Var("V")])]))
+				new pl.type.Rule(new pl.type.Term("foldl", [new pl.type.Var("Goal"),new pl.type.Term(".", [new pl.type.Var("H1"),new pl.type.Var("T1")]),new pl.type.Term(".", [new pl.type.Var("H2"),new pl.type.Var("T2")]),new pl.type.Var("V0"),new pl.type.Var("V")]), new pl.type.Term(',', [new pl.type.Term("call", [new pl.type.Var("Goal"),new pl.type.Var("H1"),new pl.type.Var("H2"),new pl.type.Var("V0"),new pl.type.Var("V1")]),new pl.type.Term("foldl", [new pl.type.Var("Goal"),new pl.type.Var("T1"),new pl.type.Var("T2"),new pl.type.Var("V1"),new pl.type.Var("V")])]))
 			],
 			
 			// foldl/6
 			"foldl/6": [
 				new pl.type.Rule(new pl.type.Term("foldl", [new pl.type.Var("_"),new pl.type.Term("[]", []),new pl.type.Term("[]", []),new pl.type.Term("[]", []),new pl.type.Var("V"),new pl.type.Var("V")]), null),
-				new pl.type.Rule(new pl.type.Term("foldl", [new pl.type.Var("Goal"),new pl.type.Term(".", [new pl.type.Var("H1"),new pl.type.Var("T1")]),new pl.type.Term(".", [new pl.type.Var("H2"),new pl.type.Var("T2")]),new pl.type.Term(".", [new pl.type.Var("H3"),new pl.type.Var("T3")]),new pl.type.Var("V0"),new pl.type.Var("V")]), new pl.type.Term(",", [new pl.type.Term("call", [new pl.type.Var("Goal"),new pl.type.Var("H1"),new pl.type.Var("H2"),new pl.type.Var("H3"),new pl.type.Var("V0"),new pl.type.Var("V1")]),new pl.type.Term("foldl", [new pl.type.Var("Goal"),new pl.type.Var("T1"),new pl.type.Var("T2"),new pl.type.Var("T3"),new pl.type.Var("V1"),new pl.type.Var("V")])]))
+				new pl.type.Rule(new pl.type.Term("foldl", [new pl.type.Var("Goal"),new pl.type.Term(".", [new pl.type.Var("H1"),new pl.type.Var("T1")]),new pl.type.Term(".", [new pl.type.Var("H2"),new pl.type.Var("T2")]),new pl.type.Term(".", [new pl.type.Var("H3"),new pl.type.Var("T3")]),new pl.type.Var("V0"),new pl.type.Var("V")]), new pl.type.Term(',', [new pl.type.Term("call", [new pl.type.Var("Goal"),new pl.type.Var("H1"),new pl.type.Var("H2"),new pl.type.Var("H3"),new pl.type.Var("V0"),new pl.type.Var("V1")]),new pl.type.Term("foldl", [new pl.type.Var("Goal"),new pl.type.Var("T1"),new pl.type.Var("T2"),new pl.type.Var("T3"),new pl.type.Var("V1"),new pl.type.Var("V")])]))
 			],
 			
 			// foldl/7
 			"foldl/7": [
 				new pl.type.Rule(new pl.type.Term("foldl", [new pl.type.Var("_"),new pl.type.Term("[]", []),new pl.type.Term("[]", []),new pl.type.Term("[]", []),new pl.type.Term("[]", []),new pl.type.Var("V"),new pl.type.Var("V")]), null),
-				new pl.type.Rule(new pl.type.Term("foldl", [new pl.type.Var("Goal"),new pl.type.Term(".", [new pl.type.Var("H1"),new pl.type.Var("T1")]),new pl.type.Term(".", [new pl.type.Var("H2"),new pl.type.Var("T2")]),new pl.type.Term(".", [new pl.type.Var("H3"),new pl.type.Var("T3")]),new pl.type.Term(".", [new pl.type.Var("H4"),new pl.type.Var("T4")]),new pl.type.Var("V0"),new pl.type.Var("V")]), new pl.type.Term(",", [new pl.type.Term("call", [new pl.type.Var("Goal"),new pl.type.Var("H1"),new pl.type.Var("H2"),new pl.type.Var("H3"),new pl.type.Var("H4"),new pl.type.Var("V0"),new pl.type.Var("V1")]),new pl.type.Term("foldl", [new pl.type.Var("Goal"),new pl.type.Var("T1"),new pl.type.Var("T2"),new pl.type.Var("T3"),new pl.type.Var("T4"),new pl.type.Var("V1"),new pl.type.Var("V")])]))
+				new pl.type.Rule(new pl.type.Term("foldl", [new pl.type.Var("Goal"),new pl.type.Term(".", [new pl.type.Var("H1"),new pl.type.Var("T1")]),new pl.type.Term(".", [new pl.type.Var("H2"),new pl.type.Var("T2")]),new pl.type.Term(".", [new pl.type.Var("H3"),new pl.type.Var("T3")]),new pl.type.Term(".", [new pl.type.Var("H4"),new pl.type.Var("T4")]),new pl.type.Var("V0"),new pl.type.Var("V")]), new pl.type.Term(',', [new pl.type.Term("call", [new pl.type.Var("Goal"),new pl.type.Var("H1"),new pl.type.Var("H2"),new pl.type.Var("H3"),new pl.type.Var("H4"),new pl.type.Var("V0"),new pl.type.Var("V1")]),new pl.type.Term("foldl", [new pl.type.Var("Goal"),new pl.type.Var("T1"),new pl.type.Var("T2"),new pl.type.Var("T3"),new pl.type.Var("T4"),new pl.type.Var("V1"),new pl.type.Var("V")])]))
 			],
 			
 			// select/3
@@ -9236,25 +9236,25 @@ var pl;
 			// sum_list/2
 			"sum_list/2": [
 				new pl.type.Rule(new pl.type.Term("sum_list", [new pl.type.Term("[]", []),new pl.type.Num(0, false)]), null),
-				new pl.type.Rule(new pl.type.Term("sum_list", [new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("Xs")]),new pl.type.Var("S")]), new pl.type.Term(",", [new pl.type.Term("sum_list", [new pl.type.Var("Xs"),new pl.type.Var("Y")]),new pl.type.Term("is", [new pl.type.Var("S"),new pl.type.Term("+", [new pl.type.Var("X"),new pl.type.Var("Y")])])]))
+				new pl.type.Rule(new pl.type.Term("sum_list", [new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("Xs")]),new pl.type.Var("S")]), new pl.type.Term(',', [new pl.type.Term("sum_list", [new pl.type.Var("Xs"),new pl.type.Var("Y")]),new pl.type.Term("is", [new pl.type.Var("S"),new pl.type.Term("+", [new pl.type.Var("X"),new pl.type.Var("Y")])])]))
 			],
 			
 			// max_list/2
 			"max_list/2": [
 				new pl.type.Rule(new pl.type.Term("max_list", [new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Term("[]", [])]),new pl.type.Var("X")]), null),
-				new pl.type.Rule(new pl.type.Term("max_list", [new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("Xs")]),new pl.type.Var("S")]), new pl.type.Term(",", [new pl.type.Term("max_list", [new pl.type.Var("Xs"),new pl.type.Var("Y")]),new pl.type.Term(";", [new pl.type.Term(",", [new pl.type.Term(">=", [new pl.type.Var("X"),new pl.type.Var("Y")]),new pl.type.Term(",", [new pl.type.Term("=", [new pl.type.Var("S"),new pl.type.Var("X")]),new pl.type.Term("!", [])])]),new pl.type.Term("=", [new pl.type.Var("S"),new pl.type.Var("Y")])])]))
+				new pl.type.Rule(new pl.type.Term("max_list", [new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("Xs")]),new pl.type.Var("S")]), new pl.type.Term(',', [new pl.type.Term("max_list", [new pl.type.Var("Xs"),new pl.type.Var("Y")]),new pl.type.Term(";", [new pl.type.Term(',', [new pl.type.Term(">=", [new pl.type.Var("X"),new pl.type.Var("Y")]),new pl.type.Term(',', [new pl.type.Term("=", [new pl.type.Var("S"),new pl.type.Var("X")]),new pl.type.Term("!", [])])]),new pl.type.Term("=", [new pl.type.Var("S"),new pl.type.Var("Y")])])]))
 			],
 			
 			// min_list/2
 			"min_list/2": [
 				new pl.type.Rule(new pl.type.Term("min_list", [new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Term("[]", [])]),new pl.type.Var("X")]), null),
-				new pl.type.Rule(new pl.type.Term("min_list", [new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("Xs")]),new pl.type.Var("S")]), new pl.type.Term(",", [new pl.type.Term("min_list", [new pl.type.Var("Xs"),new pl.type.Var("Y")]),new pl.type.Term(";", [new pl.type.Term(",", [new pl.type.Term("=<", [new pl.type.Var("X"),new pl.type.Var("Y")]),new pl.type.Term(",", [new pl.type.Term("=", [new pl.type.Var("S"),new pl.type.Var("X")]),new pl.type.Term("!", [])])]),new pl.type.Term("=", [new pl.type.Var("S"),new pl.type.Var("Y")])])]))
+				new pl.type.Rule(new pl.type.Term("min_list", [new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("Xs")]),new pl.type.Var("S")]), new pl.type.Term(',', [new pl.type.Term("min_list", [new pl.type.Var("Xs"),new pl.type.Var("Y")]),new pl.type.Term(";", [new pl.type.Term(',', [new pl.type.Term("=<", [new pl.type.Var("X"),new pl.type.Var("Y")]),new pl.type.Term(',', [new pl.type.Term("=", [new pl.type.Var("S"),new pl.type.Var("X")]),new pl.type.Term("!", [])])]),new pl.type.Term("=", [new pl.type.Var("S"),new pl.type.Var("Y")])])]))
 			],
 			
 			// prod_list/2
 			"prod_list/2": [
 				new pl.type.Rule(new pl.type.Term("prod_list", [new pl.type.Term("[]", []),new pl.type.Num(1, false)]), null),
-				new pl.type.Rule(new pl.type.Term("prod_list", [new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("Xs")]),new pl.type.Var("S")]), new pl.type.Term(",", [new pl.type.Term("prod_list", [new pl.type.Var("Xs"),new pl.type.Var("Y")]),new pl.type.Term("is", [new pl.type.Var("S"),new pl.type.Term("*", [new pl.type.Var("X"),new pl.type.Var("Y")])])]))
+				new pl.type.Rule(new pl.type.Term("prod_list", [new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("Xs")]),new pl.type.Var("S")]), new pl.type.Term(',', [new pl.type.Term("prod_list", [new pl.type.Var("Xs"),new pl.type.Var("Y")]),new pl.type.Term("is", [new pl.type.Var("S"),new pl.type.Term("*", [new pl.type.Var("X"),new pl.type.Var("Y")])])]))
 			],
 			
 			// last/2
@@ -9270,29 +9270,29 @@ var pl;
 			
 			// nth0/3
 			"nth0/3": [
-				new pl.type.Rule(new pl.type.Term("nth0", [new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z")]), new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("var", [new pl.type.Var("X")]),new pl.type.Term("nth", [new pl.type.Num(0, false),new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z"),new pl.type.Var("_")])]),new pl.type.Term(",", [new pl.type.Term(">=", [new pl.type.Var("X"),new pl.type.Num(0, false)]),new pl.type.Term(",", [new pl.type.Term("nth", [new pl.type.Num(0, false),new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z"),new pl.type.Var("_")]),new pl.type.Term("!", [])])])]))
+				new pl.type.Rule(new pl.type.Term("nth0", [new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z")]), new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("var", [new pl.type.Var("X")]),new pl.type.Term("nth", [new pl.type.Num(0, false),new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z"),new pl.type.Var("_")])]),new pl.type.Term(',', [new pl.type.Term(">=", [new pl.type.Var("X"),new pl.type.Num(0, false)]),new pl.type.Term(',', [new pl.type.Term("nth", [new pl.type.Num(0, false),new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z"),new pl.type.Var("_")]),new pl.type.Term("!", [])])])]))
 			],
 			
 			// nth1/3
 			"nth1/3": [
-				new pl.type.Rule(new pl.type.Term("nth1", [new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z")]), new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("var", [new pl.type.Var("X")]),new pl.type.Term("nth", [new pl.type.Num(1, false),new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z"),new pl.type.Var("_")])]),new pl.type.Term(",", [new pl.type.Term(">", [new pl.type.Var("X"),new pl.type.Num(0, false)]),new pl.type.Term(",", [new pl.type.Term("nth", [new pl.type.Num(1, false),new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z"),new pl.type.Var("_")]),new pl.type.Term("!", [])])])]))
+				new pl.type.Rule(new pl.type.Term("nth1", [new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z")]), new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("var", [new pl.type.Var("X")]),new pl.type.Term("nth", [new pl.type.Num(1, false),new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z"),new pl.type.Var("_")])]),new pl.type.Term(',', [new pl.type.Term(">", [new pl.type.Var("X"),new pl.type.Num(0, false)]),new pl.type.Term(',', [new pl.type.Term("nth", [new pl.type.Num(1, false),new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z"),new pl.type.Var("_")]),new pl.type.Term("!", [])])])]))
 			],
 			
 			// nth0/4
 			"nth0/4": [
-				new pl.type.Rule(new pl.type.Term("nth0", [new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z"),new pl.type.Var("W")]), new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("var", [new pl.type.Var("X")]),new pl.type.Term("nth", [new pl.type.Num(0, false),new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z"),new pl.type.Var("W")])]),new pl.type.Term(",", [new pl.type.Term(">=", [new pl.type.Var("X"),new pl.type.Num(0, false)]),new pl.type.Term(",", [new pl.type.Term("nth", [new pl.type.Num(0, false),new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z"),new pl.type.Var("W")]),new pl.type.Term("!", [])])])]))
+				new pl.type.Rule(new pl.type.Term("nth0", [new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z"),new pl.type.Var("W")]), new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("var", [new pl.type.Var("X")]),new pl.type.Term("nth", [new pl.type.Num(0, false),new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z"),new pl.type.Var("W")])]),new pl.type.Term(',', [new pl.type.Term(">=", [new pl.type.Var("X"),new pl.type.Num(0, false)]),new pl.type.Term(',', [new pl.type.Term("nth", [new pl.type.Num(0, false),new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z"),new pl.type.Var("W")]),new pl.type.Term("!", [])])])]))
 			],
 			
 			// nth1/4
 			"nth1/4": [
-				new pl.type.Rule(new pl.type.Term("nth1", [new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z"),new pl.type.Var("W")]), new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("var", [new pl.type.Var("X")]),new pl.type.Term("nth", [new pl.type.Num(1, false),new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z"),new pl.type.Var("W")])]),new pl.type.Term(",", [new pl.type.Term(">", [new pl.type.Var("X"),new pl.type.Num(0, false)]),new pl.type.Term(",", [new pl.type.Term("nth", [new pl.type.Num(1, false),new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z"),new pl.type.Var("W")]),new pl.type.Term("!", [])])])]))
+				new pl.type.Rule(new pl.type.Term("nth1", [new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z"),new pl.type.Var("W")]), new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("var", [new pl.type.Var("X")]),new pl.type.Term("nth", [new pl.type.Num(1, false),new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z"),new pl.type.Var("W")])]),new pl.type.Term(',', [new pl.type.Term(">", [new pl.type.Var("X"),new pl.type.Num(0, false)]),new pl.type.Term(',', [new pl.type.Term("nth", [new pl.type.Num(1, false),new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z"),new pl.type.Var("W")]),new pl.type.Term("!", [])])])]))
 			],
 			
 			// nth/5
 			// DO NOT EXPORT
 			"nth/5": [
 				new pl.type.Rule(new pl.type.Term("nth", [new pl.type.Var("N"),new pl.type.Var("N"),new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("Xs")]),new pl.type.Var("X"),new pl.type.Var("Xs")]), null),
-				new pl.type.Rule(new pl.type.Term("nth", [new pl.type.Var("N"),new pl.type.Var("O"),new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("Xs")]),new pl.type.Var("Y"),new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("Ys")])]), new pl.type.Term(",", [new pl.type.Term("is", [new pl.type.Var("M"),new pl.type.Term("+", [new pl.type.Var("N"),new pl.type.Num(1, false)])]),new pl.type.Term("nth", [new pl.type.Var("M"),new pl.type.Var("O"),new pl.type.Var("Xs"),new pl.type.Var("Y"),new pl.type.Var("Ys")])]))
+				new pl.type.Rule(new pl.type.Term("nth", [new pl.type.Var("N"),new pl.type.Var("O"),new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("Xs")]),new pl.type.Var("Y"),new pl.type.Term(".", [new pl.type.Var("X"),new pl.type.Var("Ys")])]), new pl.type.Term(',', [new pl.type.Term("is", [new pl.type.Var("M"),new pl.type.Term("+", [new pl.type.Var("N"),new pl.type.Num(1, false)])]),new pl.type.Term("nth", [new pl.type.Var("M"),new pl.type.Var("O"),new pl.type.Var("Xs"),new pl.type.Var("Y"),new pl.type.Var("Ys")])]))
 			],
 			
 			// length/2
@@ -9317,7 +9317,7 @@ var pl;
 					}
 					var newgoal = new pl.type.Term("length", [list, new pl.type.Num(0, false), length]);
 					if(pl.type.is_integer(length))
-						newgoal = new pl.type.Term(",", [newgoal, new pl.type.Term("!", [])]);
+						newgoal = new pl.type.Term(',', [newgoal, new pl.type.Term("!", [])]);
 					thread.prepend([
 						new pl.type.State(point.goal.replace(newgoal),
 						point.substitution,
@@ -9330,7 +9330,7 @@ var pl;
 			// DO NOT EXPORT
 			"length/3": [
 				new pl.type.Rule(new pl.type.Term("length", [new pl.type.Term("[]", []),new pl.type.Var("N"),new pl.type.Var("N")]), null),
-				new pl.type.Rule(new pl.type.Term("length", [new pl.type.Term(".", [new pl.type.Var("_"),new pl.type.Var("X")]),new pl.type.Var("A"),new pl.type.Var("N")]), new pl.type.Term(",", [new pl.type.Term("succ", [new pl.type.Var("A"),new pl.type.Var("B")]),new pl.type.Term("length", [new pl.type.Var("X"),new pl.type.Var("B"),new pl.type.Var("N")])]))
+				new pl.type.Rule(new pl.type.Term("length", [new pl.type.Term(".", [new pl.type.Var("_"),new pl.type.Var("X")]),new pl.type.Var("A"),new pl.type.Var("N")]), new pl.type.Term(',', [new pl.type.Term("succ", [new pl.type.Var("A"),new pl.type.Var("B")]),new pl.type.Term("length", [new pl.type.Var("X"),new pl.type.Var("B"),new pl.type.Var("N")])]))
 			],
 			
 			// replicate/3
@@ -9776,7 +9776,7 @@ var pl;
 			
 			// time/1
 			"time/1": [
-				new pl.type.Rule(new pl.type.Term("time", [new pl.type.Var("Goal")]), new pl.type.Term(",", [new pl.type.Term("get_time", [new pl.type.Var("T0")]),new pl.type.Term(",", [new pl.type.Term("call", [new pl.type.Var("Goal")]),new pl.type.Term(",", [new pl.type.Term("get_time", [new pl.type.Var("T1")]),new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term(",", [new pl.type.Term("is", [new pl.type.Var("T"),new pl.type.Term("-", [new pl.type.Var("T1"),new pl.type.Var("T0")])]),new pl.type.Term("write", [new pl.type.Var("T")])])])])])]))
+				new pl.type.Rule(new pl.type.Term("time", [new pl.type.Var("Goal")]), new pl.type.Term(',', [new pl.type.Term("get_time", [new pl.type.Var("T0")]),new pl.type.Term(',', [new pl.type.Term("call", [new pl.type.Var("Goal")]),new pl.type.Term(',', [new pl.type.Term("get_time", [new pl.type.Var("T1")]),new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term(',', [new pl.type.Term("is", [new pl.type.Var("T"),new pl.type.Term("-", [new pl.type.Var("T1"),new pl.type.Var("T0")])]),new pl.type.Term("write", [new pl.type.Var("T")])])])])])]))
 			],
 			
 			// statistics/0
@@ -9807,7 +9807,7 @@ var pl;
 						for( var x in statistics ) {
 							var value_ = statistics[x]( thread );
 							states.push( new pl.type.State( point.goal.replace(
-								new pl.type.Term( ",", [
+								new pl.type.Term( ',', [
 									new pl.type.Term( "=", [key, new pl.type.Term( x, [] )] ),
 									new pl.type.Term( "=", [value, value_] )
 								] )
@@ -10068,7 +10068,7 @@ var pl;
 			
 			// toggle/1
 			"toggle/1": [
-				new pl.type.Rule(new pl.type.Term("toggle", [new pl.type.Var("X")]), new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term(",", [new pl.type.Term("style", [new pl.type.Var("X"),new pl.type.Term("display", []),new pl.type.Var("Y")]),new pl.type.Term("=", [new pl.type.Var("Y"),new pl.type.Term("none", [])])]),new pl.type.Term("show", [new pl.type.Var("X")])]),new pl.type.Term("hide", [new pl.type.Var("X")])]))
+				new pl.type.Rule(new pl.type.Term("toggle", [new pl.type.Var("X")]), new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term(',', [new pl.type.Term("style", [new pl.type.Var("X"),new pl.type.Term("display", []),new pl.type.Var("Y")]),new pl.type.Term("=", [new pl.type.Var("Y"),new pl.type.Term("none", [])])]),new pl.type.Term("show", [new pl.type.Var("X")])]),new pl.type.Term("hide", [new pl.type.Var("X")])]))
 			],
 			
 			// DOM MANIPULATION
@@ -10126,7 +10126,7 @@ var pl;
 
 			// get_by_class/2
 			"get_by_class/2": [
-				new pl.type.Rule(new pl.type.Term("get_by_class", [new pl.type.Var("Class"),new pl.type.Var("Html")]), new pl.type.Term(",", [new pl.type.Term("document", [new pl.type.Var("D")]),new pl.type.Term("get_by_class", [new pl.type.Var("D"),new pl.type.Var("Class"),new pl.type.Var("Html")])]))
+				new pl.type.Rule(new pl.type.Term("get_by_class", [new pl.type.Var("Class"),new pl.type.Var("Html")]), new pl.type.Term(',', [new pl.type.Term("document", [new pl.type.Var("D")]),new pl.type.Term("get_by_class", [new pl.type.Var("D"),new pl.type.Var("Class"),new pl.type.Var("Html")])]))
 			],
 			
 			// get_by_class/3
@@ -10157,7 +10157,7 @@ var pl;
 
 			// get_by_tag/2
 			"get_by_tag/2": [
-				new pl.type.Rule(new pl.type.Term("get_by_tag", [new pl.type.Var("Tag"),new pl.type.Var("Html")]), new pl.type.Term(",", [new pl.type.Term("document", [new pl.type.Var("D")]),new pl.type.Term("get_by_tag", [new pl.type.Var("D"),new pl.type.Var("Tag"),new pl.type.Var("Html")])]))
+				new pl.type.Rule(new pl.type.Term("get_by_tag", [new pl.type.Var("Tag"),new pl.type.Var("Html")]), new pl.type.Term(',', [new pl.type.Term("document", [new pl.type.Var("D")]),new pl.type.Term("get_by_tag", [new pl.type.Var("D"),new pl.type.Var("Tag"),new pl.type.Var("Html")])]))
 			],
 			
 			// get_by_tag/3
@@ -10582,7 +10582,7 @@ var pl;
 						var states = [];
 						for( var i = 0; i < arr.length; i++ ) {
 							states.push( new pl.type.State( point.goal.replace(
-								new pl.type.Term( ",", [
+								new pl.type.Term( ',', [
 									new pl.type.Term( "=", [name, new pl.type.Term( arr[i], [] )] ),
 									new pl.type.Term( "remove_class", [element, name] )
 								] )
@@ -10670,7 +10670,7 @@ var pl;
 		else if( /^url\(["'].*["']\)$/.test( str ) )
 			return new pl.type.Term( "url", [new pl.type.Term( str.substring(5, str.length-2) )] );
 		else if( /^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)\s*$/.test( str ) ) {
-			var rgb = str.replace("rgb","").replace("(","").replace(")","").split(",");
+			var rgb = str.replace("rgb','").replace("(','").replace(")','").split(',');
 			return new pl.type.Term( "rgb", [new pl.type.Num(parseInt(rgb[0]), false), new pl.type.Num(parseInt(rgb[1]), false), new pl.type.Num(parseInt(rgb[2]), false)] );
 		}
 		return new pl.type.Term( str.toString(), [] );
@@ -11044,7 +11044,7 @@ var pl;
 			
 			// apply/3:
 			"apply/3": [
-				new pl.type.Rule(new pl.type.Term("apply", [new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z")]), new pl.type.Term(",", [new pl.type.Term("global", [new pl.type.Var("G")]),new pl.type.Term("apply", [new pl.type.Var("G"),new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z")])]))
+				new pl.type.Rule(new pl.type.Term("apply", [new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z")]), new pl.type.Term(',', [new pl.type.Term("global", [new pl.type.Var("G")]),new pl.type.Term("apply", [new pl.type.Var("G"),new pl.type.Var("X"),new pl.type.Var("Y"),new pl.type.Var("Z")])]))
 			],
 			
 			// apply/4
@@ -11103,7 +11103,7 @@ var pl;
 			
 			// get_prop/2
 			"get_prop/2": [
-				new pl.type.Rule(new pl.type.Term("get_prop", [new pl.type.Var("X"),new pl.type.Var("Y")]), new pl.type.Term(",", [new pl.type.Term("global", [new pl.type.Var("G")]),new pl.type.Term("get_prop", [new pl.type.Var("G"),new pl.type.Var("X"),new pl.type.Var("Y")])]))
+				new pl.type.Rule(new pl.type.Term("get_prop", [new pl.type.Var("X"),new pl.type.Var("Y")]), new pl.type.Term(',', [new pl.type.Term("global", [new pl.type.Var("G")]),new pl.type.Term("get_prop", [new pl.type.Var("G"),new pl.type.Var("X"),new pl.type.Var("Y")])]))
 			],
 			
 			// get_prop/3
@@ -11126,7 +11126,7 @@ var pl;
 						for( var x in fn ) {
 							if( fn.hasOwnProperty( x ) ) {
 								var fn_ = pl.fromJavaScript.apply( fn[x] );
-								states.push( new pl.type.State( point.goal.replace( new pl.type.Term( ",", [
+								states.push( new pl.type.State( point.goal.replace( new pl.type.Term( ',', [
 									new pl.type.Term( "=", [fn_, result] ),
 									new pl.type.Term( "=", [new pl.type.Term(x, []), name] )
 								]) ), point.substitution, point ) );
@@ -11139,7 +11139,7 @@ var pl;
 
 			// set_prop/2:
 			"set_prop/2": [
-				new pl.type.Rule(new pl.type.Term("set_prop", [new pl.type.Var("X"),new pl.type.Var("Y")]), new pl.type.Term(",", [new pl.type.Term("global", [new pl.type.Var("G")]),new pl.type.Term("set_prop", [new pl.type.Var("G"),new pl.type.Var("X"),new pl.type.Var("Y")])]))
+				new pl.type.Rule(new pl.type.Term("set_prop", [new pl.type.Var("X"),new pl.type.Var("Y")]), new pl.type.Term(',', [new pl.type.Term("global", [new pl.type.Var("G")]),new pl.type.Term("set_prop", [new pl.type.Var("G"),new pl.type.Var("X"),new pl.type.Var("Y")])]))
 			],
 
 			// set_prop/3
@@ -12347,7 +12347,7 @@ var pl;
 								var getname = new pl.type.Term(prop, []);
 								var getvalue = new pl.type.Term(process.env[prop], []);
 								points.push(new pl.type.State(
-									point.goal.replace(new pl.type.Term(",", [
+									point.goal.replace(new pl.type.Term(',', [
 										new pl.type.Term("=", [name, getname]),
 										new pl.type.Term("=", [value, getvalue])
 									])),
@@ -12531,7 +12531,7 @@ var pl;
 
             // fabricate_var_name/3
             "fabricate_var_name/3": [
-                new pl.type.Rule(new pl.type.Term("fabricate_var_name", [new pl.type.Var("VarType"),new pl.type.Var("VarName"),new pl.type.Var("N")]), new pl.type.Term(",", [new pl.type.Term("char_code", [new pl.type.Term("A", []),new pl.type.Var("AC")]),new pl.type.Term(",", [new pl.type.Term("is", [new pl.type.Var("LN"),new pl.type.Term("+", [new pl.type.Term("mod", [new pl.type.Var("N"),new pl.type.Num(26, false)]),new pl.type.Var("AC")])]),new pl.type.Term(",", [new pl.type.Term("char_code", [new pl.type.Var("LC"),new pl.type.Var("LN")]),new pl.type.Term(",", [new pl.type.Term("is", [new pl.type.Var("NN"),new pl.type.Term("//", [new pl.type.Var("N"),new pl.type.Num(26, false)])]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("=:=", [new pl.type.Var("NN"),new pl.type.Num(0, false)]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("==", [new pl.type.Var("VarType"),new pl.type.Term("fabricated", [])]),new pl.type.Term("atom_chars", [new pl.type.Var("VarName"),new pl.type.Term(".", [new pl.type.Term("_", []),new pl.type.Term(".", [new pl.type.Var("LC"),new pl.type.Term("[]", [])])])])]),new pl.type.Term("->", [new pl.type.Term("==", [new pl.type.Var("VarType"),new pl.type.Term("numbervars", [])]),new pl.type.Term("atom_chars", [new pl.type.Var("VarName"),new pl.type.Term(".", [new pl.type.Var("LC"),new pl.type.Term("[]", [])])])])])]),new pl.type.Term(",", [new pl.type.Term("number_chars", [new pl.type.Var("NN"),new pl.type.Var("NNChars")]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("==", [new pl.type.Var("VarType"),new pl.type.Term("fabricated", [])]),new pl.type.Term("atom_chars", [new pl.type.Var("VarName"),new pl.type.Term(".", [new pl.type.Term("_", []),new pl.type.Term(".", [new pl.type.Var("LC"),new pl.type.Var("NNChars")])])])]),new pl.type.Term("->", [new pl.type.Term("==", [new pl.type.Var("VarType"),new pl.type.Term("numbervars", [])]),new pl.type.Term("atom_chars", [new pl.type.Var("VarName"),new pl.type.Term(".", [new pl.type.Var("LC"),new pl.type.Var("NNChars")])])])])])])])])])]))
+                new pl.type.Rule(new pl.type.Term("fabricate_var_name", [new pl.type.Var("VarType"),new pl.type.Var("VarName"),new pl.type.Var("N")]), new pl.type.Term(',', [new pl.type.Term("char_code", [new pl.type.Term("A", []),new pl.type.Var("AC")]),new pl.type.Term(',', [new pl.type.Term("is", [new pl.type.Var("LN"),new pl.type.Term("+", [new pl.type.Term("mod", [new pl.type.Var("N"),new pl.type.Num(26, false)]),new pl.type.Var("AC")])]),new pl.type.Term(',', [new pl.type.Term("char_code", [new pl.type.Var("LC"),new pl.type.Var("LN")]),new pl.type.Term(',', [new pl.type.Term("is", [new pl.type.Var("NN"),new pl.type.Term("//", [new pl.type.Var("N"),new pl.type.Num(26, false)])]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("=:=", [new pl.type.Var("NN"),new pl.type.Num(0, false)]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("==", [new pl.type.Var("VarType"),new pl.type.Term("fabricated", [])]),new pl.type.Term("atom_chars", [new pl.type.Var("VarName"),new pl.type.Term(".", [new pl.type.Term("_", []),new pl.type.Term(".", [new pl.type.Var("LC"),new pl.type.Term("[]", [])])])])]),new pl.type.Term("->", [new pl.type.Term("==", [new pl.type.Var("VarType"),new pl.type.Term("numbervars", [])]),new pl.type.Term("atom_chars", [new pl.type.Var("VarName"),new pl.type.Term(".", [new pl.type.Var("LC"),new pl.type.Term("[]", [])])])])])]),new pl.type.Term(',', [new pl.type.Term("number_chars", [new pl.type.Var("NN"),new pl.type.Var("NNChars")]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("==", [new pl.type.Var("VarType"),new pl.type.Term("fabricated", [])]),new pl.type.Term("atom_chars", [new pl.type.Var("VarName"),new pl.type.Term(".", [new pl.type.Term("_", []),new pl.type.Term(".", [new pl.type.Var("LC"),new pl.type.Var("NNChars")])])])]),new pl.type.Term("->", [new pl.type.Term("==", [new pl.type.Var("VarType"),new pl.type.Term("numbervars", [])]),new pl.type.Term("atom_chars", [new pl.type.Var("VarName"),new pl.type.Term(".", [new pl.type.Var("LC"),new pl.type.Var("NNChars")])])])])])])])])])]))
             ]
 
         };
@@ -12551,82 +12551,82 @@ var pl;
 	var predicates = function() {
 		return {
 			"format_/4": [
-				new pl.type.Rule(new pl.type.Term("format_", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32320"),new pl.type.Var("_32322")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("is_list", [new pl.type.Var("_32316")]),new pl.type.Term("true", [])]),new pl.type.Term("throw", [new pl.type.Term("error", [new pl.type.Term("type_error", [new pl.type.Term("list", []),new pl.type.Var("_32316")]),new pl.type.Term("//", [new pl.type.Term("format_", []),new pl.type.Num(2, false)])])])]),new pl.type.Term(",", [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("is_list", [new pl.type.Var("_32317")]),new pl.type.Term("true", [])]),new pl.type.Term("throw", [new pl.type.Term("error", [new pl.type.Term("type_error", [new pl.type.Term("list", []),new pl.type.Var("_32317")]),new pl.type.Term("//", [new pl.type.Term("format_", []),new pl.type.Num(2, false)])])])]),new pl.type.Term(",", [new pl.type.Term("unique_variable_names", [new pl.type.Var("_32317"),new pl.type.Var("_32318")]),new pl.type.Term("phrase", [new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Num(0, false),new pl.type.Term("[]", []),new pl.type.Var("_32318")]),new pl.type.Var("_32319")])])])]),new pl.type.Term("=", [new pl.type.Var("_32320"),new pl.type.Var("_32321")])]),new pl.type.Term("format_cells", [new pl.type.Var("_32319"),new pl.type.Var("_32321"),new pl.type.Var("_32322")])]))
+				new pl.type.Rule(new pl.type.Term("format_", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32320"),new pl.type.Var("_32322")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("is_list", [new pl.type.Var("_32316")]),new pl.type.Term("true", [])]),new pl.type.Term("throw", [new pl.type.Term("error", [new pl.type.Term("type_error", [new pl.type.Term("list", []),new pl.type.Var("_32316")]),new pl.type.Term("//", [new pl.type.Term("format_", []),new pl.type.Num(2, false)])])])]),new pl.type.Term(',', [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("is_list", [new pl.type.Var("_32317")]),new pl.type.Term("true", [])]),new pl.type.Term("throw", [new pl.type.Term("error", [new pl.type.Term("type_error", [new pl.type.Term("list", []),new pl.type.Var("_32317")]),new pl.type.Term("//", [new pl.type.Term("format_", []),new pl.type.Num(2, false)])])])]),new pl.type.Term(',', [new pl.type.Term("unique_variable_names", [new pl.type.Var("_32317"),new pl.type.Var("_32318")]),new pl.type.Term("phrase", [new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Num(0, false),new pl.type.Term("[]", []),new pl.type.Var("_32318")]),new pl.type.Var("_32319")])])])]),new pl.type.Term("=", [new pl.type.Var("_32320"),new pl.type.Var("_32321")])]),new pl.type.Term("format_cells", [new pl.type.Var("_32319"),new pl.type.Var("_32321"),new pl.type.Var("_32322")])]))
 			],
 			"format_cells/3": [
 				new pl.type.Rule(new pl.type.Term("format_cells", [new pl.type.Term("[]", []),new pl.type.Var("_32323"),new pl.type.Var("_32323")]), new pl.type.Term("true", [])),
-				new pl.type.Rule(new pl.type.Term("format_cells", [new pl.type.Term(".", [new pl.type.Var("_32324"),new pl.type.Var("_32319")]),new pl.type.Var("_32325"),new pl.type.Var("_32327")]), new pl.type.Term(",", [new pl.type.Term("format_cell", [new pl.type.Var("_32324"),new pl.type.Var("_32325"),new pl.type.Var("_32326")]),new pl.type.Term("format_cells", [new pl.type.Var("_32319"),new pl.type.Var("_32326"),new pl.type.Var("_32327")])]))
+				new pl.type.Rule(new pl.type.Term("format_cells", [new pl.type.Term(".", [new pl.type.Var("_32324"),new pl.type.Var("_32319")]),new pl.type.Var("_32325"),new pl.type.Var("_32327")]), new pl.type.Term(',', [new pl.type.Term("format_cell", [new pl.type.Var("_32324"),new pl.type.Var("_32325"),new pl.type.Var("_32326")]),new pl.type.Term("format_cells", [new pl.type.Var("_32319"),new pl.type.Var("_32326"),new pl.type.Var("_32327")])]))
 			],
 			"format_cell/3": [
 				new pl.type.Rule(new pl.type.Term("format_cell", [new pl.type.Term("newline", []),new pl.type.Term(".", [new pl.type.Term("\n", []),new pl.type.Var("_32329")]),new pl.type.Var("_32329")]), null),
-				new pl.type.Rule(new pl.type.Term("format_cell", [new pl.type.Term("cell", [new pl.type.Var("_32330"),new pl.type.Var("_32331"),new pl.type.Var("_32332")]),new pl.type.Var("_32341"),new pl.type.Var("_32343")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("phrase", [new pl.type.Term("elements_gluevars", [new pl.type.Var("_32332"),new pl.type.Num(0, false),new pl.type.Var("_32333")]),new pl.type.Var("_32334")]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("=", [new pl.type.Var("_32334"),new pl.type.Term("[]", [])]),new pl.type.Term("true", [])]),new pl.type.Term(",", [new pl.type.Term("is", [new pl.type.Var("_32335"),new pl.type.Term("-", [new pl.type.Term("-", [new pl.type.Var("_32331"),new pl.type.Var("_32330")]),new pl.type.Var("_32333")])]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("=<", [new pl.type.Var("_32335"),new pl.type.Num(0, false)]),new pl.type.Term("maplist", [new pl.type.Term("=", [new pl.type.Num(0, false)]),new pl.type.Var("_32334")])]),new pl.type.Term(",", [new pl.type.Term("length", [new pl.type.Var("_32334"),new pl.type.Var("_32336")]),new pl.type.Term(",", [new pl.type.Term("is", [new pl.type.Var("_32337"),new pl.type.Term("//", [new pl.type.Var("_32335"),new pl.type.Var("_32336")])]),new pl.type.Term(",", [new pl.type.Term("is", [new pl.type.Var("_32338"),new pl.type.Term("-", [new pl.type.Var("_32335"),new pl.type.Term("*", [new pl.type.Var("_32337"),new pl.type.Var("_32336")])])]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("=:=", [new pl.type.Var("_32338"),new pl.type.Num(0, false)]),new pl.type.Term("maplist", [new pl.type.Term("=", [new pl.type.Var("_32337")]),new pl.type.Var("_32334")])]),new pl.type.Term(",", [new pl.type.Term("is", [new pl.type.Var("_32339"),new pl.type.Term("+", [new pl.type.Var("_32337"),new pl.type.Var("_32338")])]),new pl.type.Term(",", [new pl.type.Term("reverse", [new pl.type.Var("_32334"),new pl.type.Term(".", [new pl.type.Var("_32339"),new pl.type.Var("_32340")])]),new pl.type.Term("maplist", [new pl.type.Term("=", [new pl.type.Var("_32337")]),new pl.type.Var("_32340")])])])])])])])])])])]),new pl.type.Term("=", [new pl.type.Var("_32341"),new pl.type.Var("_32342")])]),new pl.type.Term("format_elements", [new pl.type.Var("_32332"),new pl.type.Var("_32342"),new pl.type.Var("_32343")])]))
+				new pl.type.Rule(new pl.type.Term("format_cell", [new pl.type.Term("cell", [new pl.type.Var("_32330"),new pl.type.Var("_32331"),new pl.type.Var("_32332")]),new pl.type.Var("_32341"),new pl.type.Var("_32343")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("phrase", [new pl.type.Term("elements_gluevars", [new pl.type.Var("_32332"),new pl.type.Num(0, false),new pl.type.Var("_32333")]),new pl.type.Var("_32334")]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("=", [new pl.type.Var("_32334"),new pl.type.Term("[]", [])]),new pl.type.Term("true", [])]),new pl.type.Term(',', [new pl.type.Term("is", [new pl.type.Var("_32335"),new pl.type.Term("-", [new pl.type.Term("-", [new pl.type.Var("_32331"),new pl.type.Var("_32330")]),new pl.type.Var("_32333")])]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("=<", [new pl.type.Var("_32335"),new pl.type.Num(0, false)]),new pl.type.Term("maplist", [new pl.type.Term("=", [new pl.type.Num(0, false)]),new pl.type.Var("_32334")])]),new pl.type.Term(',', [new pl.type.Term("length", [new pl.type.Var("_32334"),new pl.type.Var("_32336")]),new pl.type.Term(',', [new pl.type.Term("is", [new pl.type.Var("_32337"),new pl.type.Term("//", [new pl.type.Var("_32335"),new pl.type.Var("_32336")])]),new pl.type.Term(',', [new pl.type.Term("is", [new pl.type.Var("_32338"),new pl.type.Term("-", [new pl.type.Var("_32335"),new pl.type.Term("*", [new pl.type.Var("_32337"),new pl.type.Var("_32336")])])]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("=:=", [new pl.type.Var("_32338"),new pl.type.Num(0, false)]),new pl.type.Term("maplist", [new pl.type.Term("=", [new pl.type.Var("_32337")]),new pl.type.Var("_32334")])]),new pl.type.Term(',', [new pl.type.Term("is", [new pl.type.Var("_32339"),new pl.type.Term("+", [new pl.type.Var("_32337"),new pl.type.Var("_32338")])]),new pl.type.Term(',', [new pl.type.Term("reverse", [new pl.type.Var("_32334"),new pl.type.Term(".", [new pl.type.Var("_32339"),new pl.type.Var("_32340")])]),new pl.type.Term("maplist", [new pl.type.Term("=", [new pl.type.Var("_32337")]),new pl.type.Var("_32340")])])])])])])])])])])]),new pl.type.Term("=", [new pl.type.Var("_32341"),new pl.type.Var("_32342")])]),new pl.type.Term("format_elements", [new pl.type.Var("_32332"),new pl.type.Var("_32342"),new pl.type.Var("_32343")])]))
 			],
 			"format_elements/3": [
 				new pl.type.Rule(new pl.type.Term("format_elements", [new pl.type.Term("[]", []),new pl.type.Var("_32344"),new pl.type.Var("_32344")]), new pl.type.Term("true", [])),
-				new pl.type.Rule(new pl.type.Term("format_elements", [new pl.type.Term(".", [new pl.type.Var("_32345"),new pl.type.Var("_32332")]),new pl.type.Var("_32346"),new pl.type.Var("_32348")]), new pl.type.Term(",", [new pl.type.Term("format_element", [new pl.type.Var("_32345"),new pl.type.Var("_32346"),new pl.type.Var("_32347")]),new pl.type.Term("format_elements", [new pl.type.Var("_32332"),new pl.type.Var("_32347"),new pl.type.Var("_32348")])]))
+				new pl.type.Rule(new pl.type.Term("format_elements", [new pl.type.Term(".", [new pl.type.Var("_32345"),new pl.type.Var("_32332")]),new pl.type.Var("_32346"),new pl.type.Var("_32348")]), new pl.type.Term(',', [new pl.type.Term("format_element", [new pl.type.Var("_32345"),new pl.type.Var("_32346"),new pl.type.Var("_32347")]),new pl.type.Term("format_elements", [new pl.type.Var("_32332"),new pl.type.Var("_32347"),new pl.type.Var("_32348")])]))
 			],
 			"format_element/3": [
 				new pl.type.Rule(new pl.type.Term("format_element", [new pl.type.Term("chars", [new pl.type.Var("_32349")]),new pl.type.Var("_32350"),new pl.type.Var("_32351")]), new pl.type.Term("seq", [new pl.type.Var("_32349"),new pl.type.Var("_32350"),new pl.type.Var("_32351")])),
-				new pl.type.Rule(new pl.type.Term("format_element", [new pl.type.Term("glue", [new pl.type.Var("_32352"),new pl.type.Var("_32353")]),new pl.type.Var("_32355"),new pl.type.Var("_32357")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("length", [new pl.type.Var("_32354"),new pl.type.Var("_32353")]),new pl.type.Term("maplist", [new pl.type.Term("=", [new pl.type.Var("_32352")]),new pl.type.Var("_32354")])]),new pl.type.Term("=", [new pl.type.Var("_32355"),new pl.type.Var("_32356")])]),new pl.type.Term("seq", [new pl.type.Var("_32354"),new pl.type.Var("_32356"),new pl.type.Var("_32357")])]))
+				new pl.type.Rule(new pl.type.Term("format_element", [new pl.type.Term("glue", [new pl.type.Var("_32352"),new pl.type.Var("_32353")]),new pl.type.Var("_32355"),new pl.type.Var("_32357")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("length", [new pl.type.Var("_32354"),new pl.type.Var("_32353")]),new pl.type.Term("maplist", [new pl.type.Term("=", [new pl.type.Var("_32352")]),new pl.type.Var("_32354")])]),new pl.type.Term("=", [new pl.type.Var("_32355"),new pl.type.Var("_32356")])]),new pl.type.Term("seq", [new pl.type.Var("_32354"),new pl.type.Var("_32356"),new pl.type.Var("_32357")])]))
 			],
 			"elements_gluevars/5": [
 				new pl.type.Rule(new pl.type.Term("elements_gluevars", [new pl.type.Term("[]", []),new pl.type.Var("_32358"),new pl.type.Var("_32358"),new pl.type.Var("_32359"),new pl.type.Var("_32359")]), new pl.type.Term("true", [])),
-				new pl.type.Rule(new pl.type.Term("elements_gluevars", [new pl.type.Term(".", [new pl.type.Var("_32345"),new pl.type.Var("_32332")]),new pl.type.Var("_32360"),new pl.type.Var("_32358"),new pl.type.Var("_32362"),new pl.type.Var("_32364")]), new pl.type.Term(",", [new pl.type.Term("element_gluevar", [new pl.type.Var("_32345"),new pl.type.Var("_32360"),new pl.type.Var("_32361"),new pl.type.Var("_32362"),new pl.type.Var("_32363")]),new pl.type.Term("elements_gluevars", [new pl.type.Var("_32332"),new pl.type.Var("_32361"),new pl.type.Var("_32358"),new pl.type.Var("_32363"),new pl.type.Var("_32364")])]))
+				new pl.type.Rule(new pl.type.Term("elements_gluevars", [new pl.type.Term(".", [new pl.type.Var("_32345"),new pl.type.Var("_32332")]),new pl.type.Var("_32360"),new pl.type.Var("_32358"),new pl.type.Var("_32362"),new pl.type.Var("_32364")]), new pl.type.Term(',', [new pl.type.Term("element_gluevar", [new pl.type.Var("_32345"),new pl.type.Var("_32360"),new pl.type.Var("_32361"),new pl.type.Var("_32362"),new pl.type.Var("_32363")]),new pl.type.Term("elements_gluevars", [new pl.type.Var("_32332"),new pl.type.Var("_32361"),new pl.type.Var("_32358"),new pl.type.Var("_32363"),new pl.type.Var("_32364")])]))
 			],
 			"element_gluevar/5": [
-				new pl.type.Rule(new pl.type.Term("element_gluevar", [new pl.type.Term("chars", [new pl.type.Var("_32349")]),new pl.type.Var("_32360"),new pl.type.Var("_32358"),new pl.type.Var("_32366"),new pl.type.Var("_32367")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("length", [new pl.type.Var("_32349"),new pl.type.Var("_32365")]),new pl.type.Term("is", [new pl.type.Var("_32358"),new pl.type.Term("+", [new pl.type.Var("_32360"),new pl.type.Var("_32365")])])]),new pl.type.Term("=", [new pl.type.Var("_32366"),new pl.type.Var("_32367")])])),
+				new pl.type.Rule(new pl.type.Term("element_gluevar", [new pl.type.Term("chars", [new pl.type.Var("_32349")]),new pl.type.Var("_32360"),new pl.type.Var("_32358"),new pl.type.Var("_32366"),new pl.type.Var("_32367")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("length", [new pl.type.Var("_32349"),new pl.type.Var("_32365")]),new pl.type.Term("is", [new pl.type.Var("_32358"),new pl.type.Term("+", [new pl.type.Var("_32360"),new pl.type.Var("_32365")])])]),new pl.type.Term("=", [new pl.type.Var("_32366"),new pl.type.Var("_32367")])])),
 				new pl.type.Rule(new pl.type.Term("element_gluevar", [new pl.type.Term("glue", [new pl.type.Var("__32368"),new pl.type.Var("_32369")]),new pl.type.Var("_32358"),new pl.type.Var("_32358"),new pl.type.Term(".", [new pl.type.Var("_32369"),new pl.type.Var("_32371")]),new pl.type.Var("_32371")]), null)
 			],
 			"cells/7": [
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term("[]", []),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("__32373"),new pl.type.Var("_32374"),new pl.type.Var("_32378")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32374"),new pl.type.Var("_32375")])]),new pl.type.Term(",", [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term(",", [new pl.type.Term("==", [new pl.type.Var("_32317"),new pl.type.Term("[]", [])]),new pl.type.Term("=", [new pl.type.Var("_32375"),new pl.type.Var("_32376")])]),new pl.type.Term("cell", [new pl.type.Var("_32372"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32376"),new pl.type.Var("_32377")])]),new pl.type.Term(",", [new pl.type.Term("throw", [new pl.type.Term("error", [new pl.type.Term("domain_error", [new pl.type.Term("empty_list", []),new pl.type.Var("_32317")]),new pl.type.Term("//", [new pl.type.Term("cells", []),new pl.type.Num(5, false)])])]),new pl.type.Term("=", [new pl.type.Var("_32375"),new pl.type.Var("_32378")])])]),new pl.type.Term("=", [new pl.type.Var("_32377"),new pl.type.Var("_32378")])])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32316")])]),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32379"),new pl.type.Var("_32381")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32379"),new pl.type.Var("_32380")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term("[]", [])])]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32380"),new pl.type.Var("_32381")])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("w", []),new pl.type.Var("_32316")])]),new pl.type.Term(".", [new pl.type.Var("_32382"),new pl.type.Var("_32317")]),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32384"),new pl.type.Var("_32387")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32384"),new pl.type.Var("_32385")])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("write_term_to_chars", [new pl.type.Var("_32382"),new pl.type.Term(".", [new pl.type.Term("numbervars", [new pl.type.Term("true", [])]),new pl.type.Term(".", [new pl.type.Term("variable_names", [new pl.type.Var("_32318")]),new pl.type.Term("[]", [])])]),new pl.type.Var("_32383")]),new pl.type.Term("=", [new pl.type.Var("_32385"),new pl.type.Var("_32386")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32383")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32386"),new pl.type.Var("_32387")])])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("q", []),new pl.type.Var("_32316")])]),new pl.type.Term(".", [new pl.type.Var("_32382"),new pl.type.Var("_32317")]),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32388"),new pl.type.Var("_32391")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32388"),new pl.type.Var("_32389")])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("write_term_to_chars", [new pl.type.Var("_32382"),new pl.type.Term(".", [new pl.type.Term("quoted", [new pl.type.Term("true", [])]),new pl.type.Term(".", [new pl.type.Term("numbervars", [new pl.type.Term("true", [])]),new pl.type.Term(".", [new pl.type.Term("variable_names", [new pl.type.Var("_32318")]),new pl.type.Term("[]", [])])])]),new pl.type.Var("_32383")]),new pl.type.Term("=", [new pl.type.Var("_32389"),new pl.type.Var("_32390")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32383")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32390"),new pl.type.Var("_32391")])])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("a", []),new pl.type.Var("_32316")])]),new pl.type.Term(".", [new pl.type.Var("_32382"),new pl.type.Var("_32317")]),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32392"),new pl.type.Var("_32395")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32392"),new pl.type.Var("_32393")])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("atom_chars", [new pl.type.Var("_32382"),new pl.type.Var("_32383")]),new pl.type.Term("=", [new pl.type.Var("_32393"),new pl.type.Var("_32394")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32383")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32394"),new pl.type.Var("_32395")])])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32396")]),new pl.type.Var("_32397"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32404"),new pl.type.Var("_32411")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("numeric_argument", [new pl.type.Var("_32396"),new pl.type.Var("_32353"),new pl.type.Term(".", [new pl.type.Term("d", []),new pl.type.Var("_32316")]),new pl.type.Var("_32397"),new pl.type.Term(".", [new pl.type.Var("_32398"),new pl.type.Var("_32317")])]),new pl.type.Term("=", [new pl.type.Var("_32404"),new pl.type.Var("_32405")])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32405"),new pl.type.Var("_32406")])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("is", [new pl.type.Var("_32382"),new pl.type.Var("_32398")]),new pl.type.Term(",", [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("integer", [new pl.type.Var("_32382")]),new pl.type.Term("true", [])]),new pl.type.Term("throw", [new pl.type.Term("error", [new pl.type.Term("type_error", [new pl.type.Term("integer", []),new pl.type.Var("_32382")]),new pl.type.Term("//", [new pl.type.Term("cells", []),new pl.type.Num(5, false)])])])]),new pl.type.Term("number_chars", [new pl.type.Var("_32382"),new pl.type.Var("_32399")])])]),new pl.type.Term("=", [new pl.type.Var("_32406"),new pl.type.Var("_32407")])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term(",", [new pl.type.Term("=:=", [new pl.type.Var("_32353"),new pl.type.Num(0, false)]),new pl.type.Term("=", [new pl.type.Var("_32407"),new pl.type.Var("_32408")])]),new pl.type.Term(",", [new pl.type.Term("=", [new pl.type.Var("_32349"),new pl.type.Var("_32399")]),new pl.type.Term("=", [new pl.type.Var("_32408"),new pl.type.Var("_32409")])])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("length", [new pl.type.Var("_32399"),new pl.type.Var("_32365")]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("=<", [new pl.type.Var("_32365"),new pl.type.Var("_32353")]),new pl.type.Term(",", [new pl.type.Term("is", [new pl.type.Var("_32338"),new pl.type.Term("-", [new pl.type.Var("_32353"),new pl.type.Var("_32365")])]),new pl.type.Term(",", [new pl.type.Term("length", [new pl.type.Var("_32400"),new pl.type.Var("_32338")]),new pl.type.Term(",", [new pl.type.Term("maplist", [new pl.type.Term("=", [new pl.type.Term("0", [])]),new pl.type.Var("_32400")]),new pl.type.Term("phrase", [new pl.type.Term(",", [new pl.type.Term(".", [new pl.type.Term("0", []),new pl.type.Term(".", [new pl.type.Term(".", []),new pl.type.Term("[]", [])])]),new pl.type.Term(",", [new pl.type.Term("seq", [new pl.type.Var("_32400")]),new pl.type.Term("seq", [new pl.type.Var("_32399")])])]),new pl.type.Var("_32349")])])])])]),new pl.type.Term(",", [new pl.type.Term("is", [new pl.type.Var("_32401"),new pl.type.Term("-", [new pl.type.Var("_32365"),new pl.type.Var("_32353")])]),new pl.type.Term(",", [new pl.type.Term("length", [new pl.type.Var("_32402"),new pl.type.Var("_32401")]),new pl.type.Term(",", [new pl.type.Term("append", [new pl.type.Var("_32402"),new pl.type.Var("_32403"),new pl.type.Var("_32399")]),new pl.type.Term("phrase", [new pl.type.Term(",", [new pl.type.Term("seq", [new pl.type.Var("_32402")]),new pl.type.Term(",", [new pl.type.Term(".", [new pl.type.Term(".", []),new pl.type.Term("[]", [])]),new pl.type.Term("seq", [new pl.type.Var("_32403")])])]),new pl.type.Var("_32349")])])])])])]),new pl.type.Term("=", [new pl.type.Var("_32407"),new pl.type.Var("_32410")])])]),new pl.type.Term("=", [new pl.type.Var("_32409"),new pl.type.Var("_32410")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32349")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32410"),new pl.type.Var("_32411")])])])])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32396")]),new pl.type.Var("_32397"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32417"),new pl.type.Var("_32421")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("numeric_argument", [new pl.type.Var("_32396"),new pl.type.Var("_32353"),new pl.type.Term(".", [new pl.type.Term("D", []),new pl.type.Var("_32316")]),new pl.type.Var("_32397"),new pl.type.Term(".", [new pl.type.Var("_32382"),new pl.type.Var("_32317")])]),new pl.type.Term("=", [new pl.type.Var("_32417"),new pl.type.Var("_32418")])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32418"),new pl.type.Var("_32419")])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("number_chars", [new pl.type.Var("_32353"),new pl.type.Var("_32412")]),new pl.type.Term(",", [new pl.type.Term("phrase", [new pl.type.Term(",", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term("[]", [])]),new pl.type.Term(",", [new pl.type.Term("seq", [new pl.type.Var("_32412")]),new pl.type.Term(".", [new pl.type.Term("d", []),new pl.type.Term("[]", [])])])]),new pl.type.Var("_32413")]),new pl.type.Term(",", [new pl.type.Term("phrase", [new pl.type.Term("format_", [new pl.type.Var("_32413"),new pl.type.Term(".", [new pl.type.Var("_32382"),new pl.type.Term("[]", [])])]),new pl.type.Var("_32399")]),new pl.type.Term(",", [new pl.type.Term("phrase", [new pl.type.Term("upto_what", [new pl.type.Var("_32414"),new pl.type.Term(".", [])]),new pl.type.Var("_32399"),new pl.type.Var("_32403")]),new pl.type.Term(",", [new pl.type.Term("reverse", [new pl.type.Var("_32414"),new pl.type.Var("_32415")]),new pl.type.Term(",", [new pl.type.Term("phrase", [new pl.type.Term("groups_of_three", [new pl.type.Var("_32415")]),new pl.type.Var("_32416")]),new pl.type.Term(",", [new pl.type.Term("reverse", [new pl.type.Var("_32416"),new pl.type.Var("_32402")]),new pl.type.Term("append", [new pl.type.Var("_32402"),new pl.type.Var("_32403"),new pl.type.Var("_32349")])])])])])])])]),new pl.type.Term("=", [new pl.type.Var("_32419"),new pl.type.Var("_32420")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32349")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32420"),new pl.type.Var("_32421")])])])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("i", []),new pl.type.Var("_32316")])]),new pl.type.Term(".", [new pl.type.Var("__32422"),new pl.type.Var("_32317")]),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32423"),new pl.type.Var("_32425")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32423"),new pl.type.Var("_32424")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32424"),new pl.type.Var("_32425")])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("n", []),new pl.type.Var("_32316")])]),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32426"),new pl.type.Var("_32430")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32426"),new pl.type.Var("_32427")])]),new pl.type.Term(",", [new pl.type.Term("cell", [new pl.type.Var("_32372"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32427"),new pl.type.Var("_32428")]),new pl.type.Term(",", [new pl.type.Term("n_newlines", [new pl.type.Num(1, false),new pl.type.Var("_32428"),new pl.type.Var("_32429")]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Num(0, false),new pl.type.Term("[]", []),new pl.type.Var("_32318"),new pl.type.Var("_32429"),new pl.type.Var("_32430")])])])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32396")]),new pl.type.Var("_32397"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32431"),new pl.type.Var("_32436")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("numeric_argument", [new pl.type.Var("_32396"),new pl.type.Var("_32353"),new pl.type.Term(".", [new pl.type.Term("n", []),new pl.type.Var("_32316")]),new pl.type.Var("_32397"),new pl.type.Var("_32317")]),new pl.type.Term("=", [new pl.type.Var("_32431"),new pl.type.Var("_32432")])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32432"),new pl.type.Var("_32433")])]),new pl.type.Term(",", [new pl.type.Term("cell", [new pl.type.Var("_32372"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32433"),new pl.type.Var("_32434")]),new pl.type.Term(",", [new pl.type.Term("n_newlines", [new pl.type.Var("_32353"),new pl.type.Var("_32434"),new pl.type.Var("_32435")]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Num(0, false),new pl.type.Term("[]", []),new pl.type.Var("_32318"),new pl.type.Var("_32435"),new pl.type.Var("_32436")])])])])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("s", []),new pl.type.Var("_32316")])]),new pl.type.Term(".", [new pl.type.Var("_32382"),new pl.type.Var("_32317")]),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32437"),new pl.type.Var("_32439")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32437"),new pl.type.Var("_32438")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32382")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32438"),new pl.type.Var("_32439")])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("f", []),new pl.type.Var("_32316")])]),new pl.type.Term(".", [new pl.type.Var("_32382"),new pl.type.Var("_32317")]),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32440"),new pl.type.Var("_32443")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32440"),new pl.type.Var("_32441")])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("format_number_chars", [new pl.type.Var("_32382"),new pl.type.Var("_32383")]),new pl.type.Term("=", [new pl.type.Var("_32441"),new pl.type.Var("_32442")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32383")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32442"),new pl.type.Var("_32443")])])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32396")]),new pl.type.Var("_32397"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32445"),new pl.type.Var("_32449")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("numeric_argument", [new pl.type.Var("_32396"),new pl.type.Var("_32353"),new pl.type.Term(".", [new pl.type.Term("f", []),new pl.type.Var("_32316")]),new pl.type.Var("_32397"),new pl.type.Term(".", [new pl.type.Var("_32382"),new pl.type.Var("_32317")])]),new pl.type.Term("=", [new pl.type.Var("_32445"),new pl.type.Var("_32446")])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32446"),new pl.type.Var("_32447")])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("format_number_chars", [new pl.type.Var("_32382"),new pl.type.Var("_32399")]),new pl.type.Term(",", [new pl.type.Term("phrase", [new pl.type.Term("upto_what", [new pl.type.Var("_32402"),new pl.type.Term(".", [])]),new pl.type.Var("_32399"),new pl.type.Var("_32349")]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("=:=", [new pl.type.Var("_32353"),new pl.type.Num(0, false)]),new pl.type.Term("=", [new pl.type.Var("_32383"),new pl.type.Var("_32402")])]),new pl.type.Term(",", [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("=", [new pl.type.Var("_32349"),new pl.type.Term(".", [new pl.type.Term(".", []),new pl.type.Var("_32340")])]),new pl.type.Term(",", [new pl.type.Term("length", [new pl.type.Var("_32340"),new pl.type.Var("_32365")]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("<", [new pl.type.Var("_32353"),new pl.type.Var("_32365")]),new pl.type.Term(",", [new pl.type.Term("length", [new pl.type.Var("_32403"),new pl.type.Var("_32353")]),new pl.type.Term("append", [new pl.type.Var("_32403"),new pl.type.Var("__32444"),new pl.type.Var("_32340")])])]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("=:=", [new pl.type.Var("_32353"),new pl.type.Var("_32365")]),new pl.type.Term("=", [new pl.type.Var("_32403"),new pl.type.Var("_32340")])]),new pl.type.Term(",", [new pl.type.Term(">", [new pl.type.Var("_32353"),new pl.type.Var("_32365")]),new pl.type.Term(",", [new pl.type.Term("is", [new pl.type.Var("_32338"),new pl.type.Term("-", [new pl.type.Var("_32353"),new pl.type.Var("_32365")])]),new pl.type.Term(",", [new pl.type.Term("length", [new pl.type.Var("_32400"),new pl.type.Var("_32338")]),new pl.type.Term(",", [new pl.type.Term("maplist", [new pl.type.Term("=", [new pl.type.Term("0", [])]),new pl.type.Var("_32400")]),new pl.type.Term("append", [new pl.type.Var("_32340"),new pl.type.Var("_32400"),new pl.type.Var("_32403")])])])])])])])])]),new pl.type.Term(",", [new pl.type.Term("length", [new pl.type.Var("_32403"),new pl.type.Var("_32353")]),new pl.type.Term("maplist", [new pl.type.Term("=", [new pl.type.Term("0", [])]),new pl.type.Var("_32403")])])]),new pl.type.Term("append", [new pl.type.Var("_32402"),new pl.type.Term(".", [new pl.type.Term(".", []),new pl.type.Var("_32403")]),new pl.type.Var("_32383")])])])])]),new pl.type.Term("=", [new pl.type.Var("_32447"),new pl.type.Var("_32448")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32383")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32448"),new pl.type.Var("_32449")])])])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("r", []),new pl.type.Var("_32316")])]),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32450"),new pl.type.Var("_32452")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32450"),new pl.type.Var("_32451")])]),new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("8", []),new pl.type.Term(".", [new pl.type.Term("r", []),new pl.type.Var("_32316")])])]),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32451"),new pl.type.Var("_32452")])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32396")]),new pl.type.Var("_32397"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32453"),new pl.type.Var("_32457")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("numeric_argument", [new pl.type.Var("_32396"),new pl.type.Var("_32353"),new pl.type.Term(".", [new pl.type.Term("r", []),new pl.type.Var("_32316")]),new pl.type.Var("_32397"),new pl.type.Term(".", [new pl.type.Var("_32382"),new pl.type.Var("_32317")])]),new pl.type.Term("=", [new pl.type.Var("_32453"),new pl.type.Var("_32454")])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32454"),new pl.type.Var("_32455")])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("integer_to_radix", [new pl.type.Var("_32382"),new pl.type.Var("_32353"),new pl.type.Term("lowercase", []),new pl.type.Var("_32349")]),new pl.type.Term("=", [new pl.type.Var("_32455"),new pl.type.Var("_32456")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32349")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32456"),new pl.type.Var("_32457")])])])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("R", []),new pl.type.Var("_32316")])]),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32458"),new pl.type.Var("_32460")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32458"),new pl.type.Var("_32459")])]),new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("8", []),new pl.type.Term(".", [new pl.type.Term("R", []),new pl.type.Var("_32316")])])]),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32459"),new pl.type.Var("_32460")])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32396")]),new pl.type.Var("_32397"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32461"),new pl.type.Var("_32465")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("numeric_argument", [new pl.type.Var("_32396"),new pl.type.Var("_32353"),new pl.type.Term(".", [new pl.type.Term("R", []),new pl.type.Var("_32316")]),new pl.type.Var("_32397"),new pl.type.Term(".", [new pl.type.Var("_32382"),new pl.type.Var("_32317")])]),new pl.type.Term("=", [new pl.type.Var("_32461"),new pl.type.Var("_32462")])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32462"),new pl.type.Var("_32463")])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("integer_to_radix", [new pl.type.Var("_32382"),new pl.type.Var("_32353"),new pl.type.Term("uppercase", []),new pl.type.Var("_32349")]),new pl.type.Term("=", [new pl.type.Var("_32463"),new pl.type.Var("_32464")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32349")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32464"),new pl.type.Var("_32465")])])])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("`", []),new pl.type.Term(".", [new pl.type.Var("_32466"),new pl.type.Term(".", [new pl.type.Term("t", []),new pl.type.Var("_32316")])])])]),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32468"),new pl.type.Var("_32470")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32468"),new pl.type.Var("_32469")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("glue", [new pl.type.Var("_32466"),new pl.type.Var("__32467")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32469"),new pl.type.Var("_32470")])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("t", []),new pl.type.Var("_32316")])]),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32472"),new pl.type.Var("_32474")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32472"),new pl.type.Var("_32473")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("glue", [new pl.type.Term(" ", []),new pl.type.Var("__32471")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32473"),new pl.type.Var("_32474")])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("|", []),new pl.type.Var("_32316")])]),new pl.type.Var("_32317"),new pl.type.Var("_32475"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32478"),new pl.type.Var("_32482")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32478"),new pl.type.Var("_32479")])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("phrase", [new pl.type.Term("elements_gluevars", [new pl.type.Var("_32332"),new pl.type.Num(0, false),new pl.type.Var("_32476")]),new pl.type.Var("__32477")]),new pl.type.Term("is", [new pl.type.Var("_32372"),new pl.type.Term("+", [new pl.type.Var("_32475"),new pl.type.Var("_32476")])])]),new pl.type.Term("=", [new pl.type.Var("_32479"),new pl.type.Var("_32480")])]),new pl.type.Term(",", [new pl.type.Term("cell", [new pl.type.Var("_32475"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32480"),new pl.type.Var("_32481")]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term("[]", []),new pl.type.Var("_32318"),new pl.type.Var("_32481"),new pl.type.Var("_32482")])])])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32396")]),new pl.type.Var("_32397"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32483"),new pl.type.Var("_32487")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("numeric_argument", [new pl.type.Var("_32396"),new pl.type.Var("_32353"),new pl.type.Term(".", [new pl.type.Term("|", []),new pl.type.Var("_32316")]),new pl.type.Var("_32397"),new pl.type.Var("_32317")]),new pl.type.Term("=", [new pl.type.Var("_32483"),new pl.type.Var("_32484")])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32484"),new pl.type.Var("_32485")])]),new pl.type.Term(",", [new pl.type.Term("cell", [new pl.type.Var("_32372"),new pl.type.Var("_32353"),new pl.type.Var("_32332"),new pl.type.Var("_32485"),new pl.type.Var("_32486")]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32353"),new pl.type.Term("[]", []),new pl.type.Var("_32318"),new pl.type.Var("_32486"),new pl.type.Var("_32487")])])])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32396")]),new pl.type.Var("_32397"),new pl.type.Var("_32475"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32488"),new pl.type.Var("_32493")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("numeric_argument", [new pl.type.Var("_32396"),new pl.type.Var("_32353"),new pl.type.Term(".", [new pl.type.Term("+", []),new pl.type.Var("_32316")]),new pl.type.Var("_32397"),new pl.type.Var("_32317")]),new pl.type.Term("=", [new pl.type.Var("_32488"),new pl.type.Var("_32489")])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32489"),new pl.type.Var("_32490")])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("is", [new pl.type.Var("_32372"),new pl.type.Term("+", [new pl.type.Var("_32475"),new pl.type.Var("_32353")])]),new pl.type.Term("=", [new pl.type.Var("_32490"),new pl.type.Var("_32491")])]),new pl.type.Term(",", [new pl.type.Term("cell", [new pl.type.Var("_32475"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32491"),new pl.type.Var("_32492")]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term("[]", []),new pl.type.Var("_32318"),new pl.type.Var("_32492"),new pl.type.Var("_32493")])])])])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32349")]),new pl.type.Var("_32317"),new pl.type.Var("__32494"),new pl.type.Var("__32495"),new pl.type.Var("__32496"),new pl.type.Var("_32497"),new pl.type.Var("_32500")]), new pl.type.Term(",", [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term(",", [new pl.type.Term("==", [new pl.type.Var("_32317"),new pl.type.Term("[]", [])]),new pl.type.Term("=", [new pl.type.Var("_32497"),new pl.type.Var("_32498")])]),new pl.type.Term(",", [new pl.type.Term("throw", [new pl.type.Term("error", [new pl.type.Term("domain_error", [new pl.type.Term("non_empty_list", []),new pl.type.Term("[]", [])]),new pl.type.Term("//", [new pl.type.Term("cells", []),new pl.type.Num(5, false)])])]),new pl.type.Term("=", [new pl.type.Var("_32498"),new pl.type.Var("_32499")])])]),new pl.type.Term(",", [new pl.type.Term("throw", [new pl.type.Term("error", [new pl.type.Term("domain_error", [new pl.type.Term("format_string", []),new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32349")])]),new pl.type.Term("//", [new pl.type.Term("cells", []),new pl.type.Num(5, false)])])]),new pl.type.Term("=", [new pl.type.Var("_32497"),new pl.type.Var("_32500")])])]),new pl.type.Term("=", [new pl.type.Var("_32499"),new pl.type.Var("_32500")])])),
-				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Var("_32396"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32504"),new pl.type.Var("_32506")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("phrase", [new pl.type.Term("upto_what", [new pl.type.Var("_32501"),new pl.type.Term("~", [])]),new pl.type.Var("_32396"),new pl.type.Var("_32316")]),new pl.type.Term("=", [new pl.type.Var("_32501"),new pl.type.Term(".", [new pl.type.Var("__32502"),new pl.type.Var("__32503")])])]),new pl.type.Term("=", [new pl.type.Var("_32504"),new pl.type.Var("_32505")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32501")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32505"),new pl.type.Var("_32506")])]))
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term("[]", []),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("__32373"),new pl.type.Var("_32374"),new pl.type.Var("_32378")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32374"),new pl.type.Var("_32375")])]),new pl.type.Term(',', [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term(',', [new pl.type.Term("==", [new pl.type.Var("_32317"),new pl.type.Term("[]", [])]),new pl.type.Term("=", [new pl.type.Var("_32375"),new pl.type.Var("_32376")])]),new pl.type.Term("cell", [new pl.type.Var("_32372"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32376"),new pl.type.Var("_32377")])]),new pl.type.Term(',', [new pl.type.Term("throw", [new pl.type.Term("error", [new pl.type.Term("domain_error", [new pl.type.Term("empty_list", []),new pl.type.Var("_32317")]),new pl.type.Term("//", [new pl.type.Term("cells", []),new pl.type.Num(5, false)])])]),new pl.type.Term("=", [new pl.type.Var("_32375"),new pl.type.Var("_32378")])])]),new pl.type.Term("=", [new pl.type.Var("_32377"),new pl.type.Var("_32378")])])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32316")])]),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32379"),new pl.type.Var("_32381")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32379"),new pl.type.Var("_32380")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term("[]", [])])]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32380"),new pl.type.Var("_32381")])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("w", []),new pl.type.Var("_32316")])]),new pl.type.Term(".", [new pl.type.Var("_32382"),new pl.type.Var("_32317")]),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32384"),new pl.type.Var("_32387")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32384"),new pl.type.Var("_32385")])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("write_term_to_chars", [new pl.type.Var("_32382"),new pl.type.Term(".", [new pl.type.Term("numbervars", [new pl.type.Term("true", [])]),new pl.type.Term(".", [new pl.type.Term("variable_names", [new pl.type.Var("_32318")]),new pl.type.Term("[]", [])])]),new pl.type.Var("_32383")]),new pl.type.Term("=", [new pl.type.Var("_32385"),new pl.type.Var("_32386")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32383")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32386"),new pl.type.Var("_32387")])])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("q", []),new pl.type.Var("_32316")])]),new pl.type.Term(".", [new pl.type.Var("_32382"),new pl.type.Var("_32317")]),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32388"),new pl.type.Var("_32391")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32388"),new pl.type.Var("_32389")])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("write_term_to_chars", [new pl.type.Var("_32382"),new pl.type.Term(".", [new pl.type.Term("quoted", [new pl.type.Term("true", [])]),new pl.type.Term(".", [new pl.type.Term("numbervars", [new pl.type.Term("true", [])]),new pl.type.Term(".", [new pl.type.Term("variable_names", [new pl.type.Var("_32318")]),new pl.type.Term("[]", [])])])]),new pl.type.Var("_32383")]),new pl.type.Term("=", [new pl.type.Var("_32389"),new pl.type.Var("_32390")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32383")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32390"),new pl.type.Var("_32391")])])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("a", []),new pl.type.Var("_32316")])]),new pl.type.Term(".", [new pl.type.Var("_32382"),new pl.type.Var("_32317")]),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32392"),new pl.type.Var("_32395")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32392"),new pl.type.Var("_32393")])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("atom_chars", [new pl.type.Var("_32382"),new pl.type.Var("_32383")]),new pl.type.Term("=", [new pl.type.Var("_32393"),new pl.type.Var("_32394")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32383")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32394"),new pl.type.Var("_32395")])])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32396")]),new pl.type.Var("_32397"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32404"),new pl.type.Var("_32411")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("numeric_argument", [new pl.type.Var("_32396"),new pl.type.Var("_32353"),new pl.type.Term(".", [new pl.type.Term("d", []),new pl.type.Var("_32316")]),new pl.type.Var("_32397"),new pl.type.Term(".", [new pl.type.Var("_32398"),new pl.type.Var("_32317")])]),new pl.type.Term("=", [new pl.type.Var("_32404"),new pl.type.Var("_32405")])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32405"),new pl.type.Var("_32406")])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("is", [new pl.type.Var("_32382"),new pl.type.Var("_32398")]),new pl.type.Term(',', [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("integer", [new pl.type.Var("_32382")]),new pl.type.Term("true", [])]),new pl.type.Term("throw", [new pl.type.Term("error", [new pl.type.Term("type_error", [new pl.type.Term("integer", []),new pl.type.Var("_32382")]),new pl.type.Term("//", [new pl.type.Term("cells", []),new pl.type.Num(5, false)])])])]),new pl.type.Term("number_chars", [new pl.type.Var("_32382"),new pl.type.Var("_32399")])])]),new pl.type.Term("=", [new pl.type.Var("_32406"),new pl.type.Var("_32407")])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term(',', [new pl.type.Term("=:=", [new pl.type.Var("_32353"),new pl.type.Num(0, false)]),new pl.type.Term("=", [new pl.type.Var("_32407"),new pl.type.Var("_32408")])]),new pl.type.Term(',', [new pl.type.Term("=", [new pl.type.Var("_32349"),new pl.type.Var("_32399")]),new pl.type.Term("=", [new pl.type.Var("_32408"),new pl.type.Var("_32409")])])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("length", [new pl.type.Var("_32399"),new pl.type.Var("_32365")]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("=<", [new pl.type.Var("_32365"),new pl.type.Var("_32353")]),new pl.type.Term(',', [new pl.type.Term("is", [new pl.type.Var("_32338"),new pl.type.Term("-", [new pl.type.Var("_32353"),new pl.type.Var("_32365")])]),new pl.type.Term(',', [new pl.type.Term("length", [new pl.type.Var("_32400"),new pl.type.Var("_32338")]),new pl.type.Term(',', [new pl.type.Term("maplist", [new pl.type.Term("=", [new pl.type.Term("0", [])]),new pl.type.Var("_32400")]),new pl.type.Term("phrase", [new pl.type.Term(',', [new pl.type.Term(".", [new pl.type.Term("0", []),new pl.type.Term(".", [new pl.type.Term(".", []),new pl.type.Term("[]", [])])]),new pl.type.Term(',', [new pl.type.Term("seq", [new pl.type.Var("_32400")]),new pl.type.Term("seq", [new pl.type.Var("_32399")])])]),new pl.type.Var("_32349")])])])])]),new pl.type.Term(',', [new pl.type.Term("is", [new pl.type.Var("_32401"),new pl.type.Term("-", [new pl.type.Var("_32365"),new pl.type.Var("_32353")])]),new pl.type.Term(',', [new pl.type.Term("length", [new pl.type.Var("_32402"),new pl.type.Var("_32401")]),new pl.type.Term(',', [new pl.type.Term("append", [new pl.type.Var("_32402"),new pl.type.Var("_32403"),new pl.type.Var("_32399")]),new pl.type.Term("phrase", [new pl.type.Term(',', [new pl.type.Term("seq", [new pl.type.Var("_32402")]),new pl.type.Term(',', [new pl.type.Term(".", [new pl.type.Term(".", []),new pl.type.Term("[]", [])]),new pl.type.Term("seq", [new pl.type.Var("_32403")])])]),new pl.type.Var("_32349")])])])])])]),new pl.type.Term("=", [new pl.type.Var("_32407"),new pl.type.Var("_32410")])])]),new pl.type.Term("=", [new pl.type.Var("_32409"),new pl.type.Var("_32410")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32349")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32410"),new pl.type.Var("_32411")])])])])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32396")]),new pl.type.Var("_32397"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32417"),new pl.type.Var("_32421")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("numeric_argument", [new pl.type.Var("_32396"),new pl.type.Var("_32353"),new pl.type.Term(".", [new pl.type.Term("D", []),new pl.type.Var("_32316")]),new pl.type.Var("_32397"),new pl.type.Term(".", [new pl.type.Var("_32382"),new pl.type.Var("_32317")])]),new pl.type.Term("=", [new pl.type.Var("_32417"),new pl.type.Var("_32418")])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32418"),new pl.type.Var("_32419")])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("number_chars", [new pl.type.Var("_32353"),new pl.type.Var("_32412")]),new pl.type.Term(',', [new pl.type.Term("phrase", [new pl.type.Term(',', [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term("[]", [])]),new pl.type.Term(',', [new pl.type.Term("seq", [new pl.type.Var("_32412")]),new pl.type.Term(".", [new pl.type.Term("d", []),new pl.type.Term("[]", [])])])]),new pl.type.Var("_32413")]),new pl.type.Term(',', [new pl.type.Term("phrase", [new pl.type.Term("format_", [new pl.type.Var("_32413"),new pl.type.Term(".", [new pl.type.Var("_32382"),new pl.type.Term("[]", [])])]),new pl.type.Var("_32399")]),new pl.type.Term(',', [new pl.type.Term("phrase", [new pl.type.Term("upto_what", [new pl.type.Var("_32414"),new pl.type.Term(".", [])]),new pl.type.Var("_32399"),new pl.type.Var("_32403")]),new pl.type.Term(',', [new pl.type.Term("reverse", [new pl.type.Var("_32414"),new pl.type.Var("_32415")]),new pl.type.Term(',', [new pl.type.Term("phrase", [new pl.type.Term("groups_of_three", [new pl.type.Var("_32415")]),new pl.type.Var("_32416")]),new pl.type.Term(',', [new pl.type.Term("reverse", [new pl.type.Var("_32416"),new pl.type.Var("_32402")]),new pl.type.Term("append", [new pl.type.Var("_32402"),new pl.type.Var("_32403"),new pl.type.Var("_32349")])])])])])])])]),new pl.type.Term("=", [new pl.type.Var("_32419"),new pl.type.Var("_32420")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32349")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32420"),new pl.type.Var("_32421")])])])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("i", []),new pl.type.Var("_32316")])]),new pl.type.Term(".", [new pl.type.Var("__32422"),new pl.type.Var("_32317")]),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32423"),new pl.type.Var("_32425")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32423"),new pl.type.Var("_32424")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32424"),new pl.type.Var("_32425")])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("n", []),new pl.type.Var("_32316")])]),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32426"),new pl.type.Var("_32430")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32426"),new pl.type.Var("_32427")])]),new pl.type.Term(',', [new pl.type.Term("cell", [new pl.type.Var("_32372"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32427"),new pl.type.Var("_32428")]),new pl.type.Term(',', [new pl.type.Term("n_newlines", [new pl.type.Num(1, false),new pl.type.Var("_32428"),new pl.type.Var("_32429")]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Num(0, false),new pl.type.Term("[]", []),new pl.type.Var("_32318"),new pl.type.Var("_32429"),new pl.type.Var("_32430")])])])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32396")]),new pl.type.Var("_32397"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32431"),new pl.type.Var("_32436")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("numeric_argument", [new pl.type.Var("_32396"),new pl.type.Var("_32353"),new pl.type.Term(".", [new pl.type.Term("n", []),new pl.type.Var("_32316")]),new pl.type.Var("_32397"),new pl.type.Var("_32317")]),new pl.type.Term("=", [new pl.type.Var("_32431"),new pl.type.Var("_32432")])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32432"),new pl.type.Var("_32433")])]),new pl.type.Term(',', [new pl.type.Term("cell", [new pl.type.Var("_32372"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32433"),new pl.type.Var("_32434")]),new pl.type.Term(',', [new pl.type.Term("n_newlines", [new pl.type.Var("_32353"),new pl.type.Var("_32434"),new pl.type.Var("_32435")]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Num(0, false),new pl.type.Term("[]", []),new pl.type.Var("_32318"),new pl.type.Var("_32435"),new pl.type.Var("_32436")])])])])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("s", []),new pl.type.Var("_32316")])]),new pl.type.Term(".", [new pl.type.Var("_32382"),new pl.type.Var("_32317")]),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32437"),new pl.type.Var("_32439")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32437"),new pl.type.Var("_32438")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32382")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32438"),new pl.type.Var("_32439")])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("f", []),new pl.type.Var("_32316")])]),new pl.type.Term(".", [new pl.type.Var("_32382"),new pl.type.Var("_32317")]),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32440"),new pl.type.Var("_32443")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32440"),new pl.type.Var("_32441")])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("format_number_chars", [new pl.type.Var("_32382"),new pl.type.Var("_32383")]),new pl.type.Term("=", [new pl.type.Var("_32441"),new pl.type.Var("_32442")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32383")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32442"),new pl.type.Var("_32443")])])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32396")]),new pl.type.Var("_32397"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32445"),new pl.type.Var("_32449")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("numeric_argument", [new pl.type.Var("_32396"),new pl.type.Var("_32353"),new pl.type.Term(".", [new pl.type.Term("f", []),new pl.type.Var("_32316")]),new pl.type.Var("_32397"),new pl.type.Term(".", [new pl.type.Var("_32382"),new pl.type.Var("_32317")])]),new pl.type.Term("=", [new pl.type.Var("_32445"),new pl.type.Var("_32446")])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32446"),new pl.type.Var("_32447")])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("format_number_chars", [new pl.type.Var("_32382"),new pl.type.Var("_32399")]),new pl.type.Term(',', [new pl.type.Term("phrase", [new pl.type.Term("upto_what", [new pl.type.Var("_32402"),new pl.type.Term(".", [])]),new pl.type.Var("_32399"),new pl.type.Var("_32349")]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("=:=", [new pl.type.Var("_32353"),new pl.type.Num(0, false)]),new pl.type.Term("=", [new pl.type.Var("_32383"),new pl.type.Var("_32402")])]),new pl.type.Term(',', [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("=", [new pl.type.Var("_32349"),new pl.type.Term(".", [new pl.type.Term(".", []),new pl.type.Var("_32340")])]),new pl.type.Term(',', [new pl.type.Term("length", [new pl.type.Var("_32340"),new pl.type.Var("_32365")]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("<", [new pl.type.Var("_32353"),new pl.type.Var("_32365")]),new pl.type.Term(',', [new pl.type.Term("length", [new pl.type.Var("_32403"),new pl.type.Var("_32353")]),new pl.type.Term("append", [new pl.type.Var("_32403"),new pl.type.Var("__32444"),new pl.type.Var("_32340")])])]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("=:=", [new pl.type.Var("_32353"),new pl.type.Var("_32365")]),new pl.type.Term("=", [new pl.type.Var("_32403"),new pl.type.Var("_32340")])]),new pl.type.Term(',', [new pl.type.Term(">", [new pl.type.Var("_32353"),new pl.type.Var("_32365")]),new pl.type.Term(',', [new pl.type.Term("is", [new pl.type.Var("_32338"),new pl.type.Term("-", [new pl.type.Var("_32353"),new pl.type.Var("_32365")])]),new pl.type.Term(',', [new pl.type.Term("length", [new pl.type.Var("_32400"),new pl.type.Var("_32338")]),new pl.type.Term(',', [new pl.type.Term("maplist", [new pl.type.Term("=", [new pl.type.Term("0", [])]),new pl.type.Var("_32400")]),new pl.type.Term("append", [new pl.type.Var("_32340"),new pl.type.Var("_32400"),new pl.type.Var("_32403")])])])])])])])])]),new pl.type.Term(',', [new pl.type.Term("length", [new pl.type.Var("_32403"),new pl.type.Var("_32353")]),new pl.type.Term("maplist", [new pl.type.Term("=", [new pl.type.Term("0", [])]),new pl.type.Var("_32403")])])]),new pl.type.Term("append", [new pl.type.Var("_32402"),new pl.type.Term(".", [new pl.type.Term(".", []),new pl.type.Var("_32403")]),new pl.type.Var("_32383")])])])])]),new pl.type.Term("=", [new pl.type.Var("_32447"),new pl.type.Var("_32448")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32383")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32448"),new pl.type.Var("_32449")])])])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("r", []),new pl.type.Var("_32316")])]),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32450"),new pl.type.Var("_32452")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32450"),new pl.type.Var("_32451")])]),new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("8", []),new pl.type.Term(".", [new pl.type.Term("r", []),new pl.type.Var("_32316")])])]),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32451"),new pl.type.Var("_32452")])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32396")]),new pl.type.Var("_32397"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32453"),new pl.type.Var("_32457")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("numeric_argument", [new pl.type.Var("_32396"),new pl.type.Var("_32353"),new pl.type.Term(".", [new pl.type.Term("r", []),new pl.type.Var("_32316")]),new pl.type.Var("_32397"),new pl.type.Term(".", [new pl.type.Var("_32382"),new pl.type.Var("_32317")])]),new pl.type.Term("=", [new pl.type.Var("_32453"),new pl.type.Var("_32454")])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32454"),new pl.type.Var("_32455")])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("integer_to_radix", [new pl.type.Var("_32382"),new pl.type.Var("_32353"),new pl.type.Term("lowercase", []),new pl.type.Var("_32349")]),new pl.type.Term("=", [new pl.type.Var("_32455"),new pl.type.Var("_32456")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32349")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32456"),new pl.type.Var("_32457")])])])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("R", []),new pl.type.Var("_32316")])]),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32458"),new pl.type.Var("_32460")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32458"),new pl.type.Var("_32459")])]),new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("8", []),new pl.type.Term(".", [new pl.type.Term("R", []),new pl.type.Var("_32316")])])]),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32459"),new pl.type.Var("_32460")])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32396")]),new pl.type.Var("_32397"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32461"),new pl.type.Var("_32465")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("numeric_argument", [new pl.type.Var("_32396"),new pl.type.Var("_32353"),new pl.type.Term(".", [new pl.type.Term("R", []),new pl.type.Var("_32316")]),new pl.type.Var("_32397"),new pl.type.Term(".", [new pl.type.Var("_32382"),new pl.type.Var("_32317")])]),new pl.type.Term("=", [new pl.type.Var("_32461"),new pl.type.Var("_32462")])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32462"),new pl.type.Var("_32463")])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("integer_to_radix", [new pl.type.Var("_32382"),new pl.type.Var("_32353"),new pl.type.Term("uppercase", []),new pl.type.Var("_32349")]),new pl.type.Term("=", [new pl.type.Var("_32463"),new pl.type.Var("_32464")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32349")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32464"),new pl.type.Var("_32465")])])])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("`", []),new pl.type.Term(".", [new pl.type.Var("_32466"),new pl.type.Term(".", [new pl.type.Term("t", []),new pl.type.Var("_32316")])])])]),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32468"),new pl.type.Var("_32470")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32468"),new pl.type.Var("_32469")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("glue", [new pl.type.Var("_32466"),new pl.type.Var("__32467")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32469"),new pl.type.Var("_32470")])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("t", []),new pl.type.Var("_32316")])]),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32472"),new pl.type.Var("_32474")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32472"),new pl.type.Var("_32473")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("glue", [new pl.type.Term(" ", []),new pl.type.Var("__32471")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32473"),new pl.type.Var("_32474")])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("|", []),new pl.type.Var("_32316")])]),new pl.type.Var("_32317"),new pl.type.Var("_32475"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32478"),new pl.type.Var("_32482")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32478"),new pl.type.Var("_32479")])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("phrase", [new pl.type.Term("elements_gluevars", [new pl.type.Var("_32332"),new pl.type.Num(0, false),new pl.type.Var("_32476")]),new pl.type.Var("__32477")]),new pl.type.Term("is", [new pl.type.Var("_32372"),new pl.type.Term("+", [new pl.type.Var("_32475"),new pl.type.Var("_32476")])])]),new pl.type.Term("=", [new pl.type.Var("_32479"),new pl.type.Var("_32480")])]),new pl.type.Term(',', [new pl.type.Term("cell", [new pl.type.Var("_32475"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32480"),new pl.type.Var("_32481")]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term("[]", []),new pl.type.Var("_32318"),new pl.type.Var("_32481"),new pl.type.Var("_32482")])])])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32396")]),new pl.type.Var("_32397"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32483"),new pl.type.Var("_32487")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("numeric_argument", [new pl.type.Var("_32396"),new pl.type.Var("_32353"),new pl.type.Term(".", [new pl.type.Term("|", []),new pl.type.Var("_32316")]),new pl.type.Var("_32397"),new pl.type.Var("_32317")]),new pl.type.Term("=", [new pl.type.Var("_32483"),new pl.type.Var("_32484")])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32484"),new pl.type.Var("_32485")])]),new pl.type.Term(',', [new pl.type.Term("cell", [new pl.type.Var("_32372"),new pl.type.Var("_32353"),new pl.type.Var("_32332"),new pl.type.Var("_32485"),new pl.type.Var("_32486")]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32353"),new pl.type.Term("[]", []),new pl.type.Var("_32318"),new pl.type.Var("_32486"),new pl.type.Var("_32487")])])])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32396")]),new pl.type.Var("_32397"),new pl.type.Var("_32475"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32488"),new pl.type.Var("_32493")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("numeric_argument", [new pl.type.Var("_32396"),new pl.type.Var("_32353"),new pl.type.Term(".", [new pl.type.Term("+", []),new pl.type.Var("_32316")]),new pl.type.Var("_32397"),new pl.type.Var("_32317")]),new pl.type.Term("=", [new pl.type.Var("_32488"),new pl.type.Var("_32489")])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32489"),new pl.type.Var("_32490")])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("is", [new pl.type.Var("_32372"),new pl.type.Term("+", [new pl.type.Var("_32475"),new pl.type.Var("_32353")])]),new pl.type.Term("=", [new pl.type.Var("_32490"),new pl.type.Var("_32491")])]),new pl.type.Term(',', [new pl.type.Term("cell", [new pl.type.Var("_32475"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32491"),new pl.type.Var("_32492")]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term("[]", []),new pl.type.Var("_32318"),new pl.type.Var("_32492"),new pl.type.Var("_32493")])])])])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32349")]),new pl.type.Var("_32317"),new pl.type.Var("__32494"),new pl.type.Var("__32495"),new pl.type.Var("__32496"),new pl.type.Var("_32497"),new pl.type.Var("_32500")]), new pl.type.Term(',', [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term(',', [new pl.type.Term("==", [new pl.type.Var("_32317"),new pl.type.Term("[]", [])]),new pl.type.Term("=", [new pl.type.Var("_32497"),new pl.type.Var("_32498")])]),new pl.type.Term(',', [new pl.type.Term("throw", [new pl.type.Term("error", [new pl.type.Term("domain_error", [new pl.type.Term("non_empty_list", []),new pl.type.Term("[]", [])]),new pl.type.Term("//", [new pl.type.Term("cells", []),new pl.type.Num(5, false)])])]),new pl.type.Term("=", [new pl.type.Var("_32498"),new pl.type.Var("_32499")])])]),new pl.type.Term(',', [new pl.type.Term("throw", [new pl.type.Term("error", [new pl.type.Term("domain_error", [new pl.type.Term("format_string", []),new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Var("_32349")])]),new pl.type.Term("//", [new pl.type.Term("cells", []),new pl.type.Num(5, false)])])]),new pl.type.Term("=", [new pl.type.Var("_32497"),new pl.type.Var("_32500")])])]),new pl.type.Term("=", [new pl.type.Var("_32499"),new pl.type.Var("_32500")])])),
+				new pl.type.Rule(new pl.type.Term("cells", [new pl.type.Var("_32396"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Var("_32332"),new pl.type.Var("_32318"),new pl.type.Var("_32504"),new pl.type.Var("_32506")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("phrase", [new pl.type.Term("upto_what", [new pl.type.Var("_32501"),new pl.type.Term("~", [])]),new pl.type.Var("_32396"),new pl.type.Var("_32316")]),new pl.type.Term("=", [new pl.type.Var("_32501"),new pl.type.Term(".", [new pl.type.Var("__32502"),new pl.type.Var("__32503")])])]),new pl.type.Term("=", [new pl.type.Var("_32504"),new pl.type.Var("_32505")])]),new pl.type.Term("cells", [new pl.type.Var("_32316"),new pl.type.Var("_32317"),new pl.type.Var("_32372"),new pl.type.Term(".", [new pl.type.Term("chars", [new pl.type.Var("_32501")]),new pl.type.Var("_32332")]),new pl.type.Var("_32318"),new pl.type.Var("_32505"),new pl.type.Var("_32506")])]))
 			],
 			"format_number_chars/2": [
-				new pl.type.Rule(new pl.type.Term("format_number_chars", [new pl.type.Var("N0"),new pl.type.Var("Chars")]), new pl.type.Term(",", [new pl.type.Term("is", [new pl.type.Var("N"),new pl.type.Var("N0")]),new pl.type.Term("number_chars", [new pl.type.Var("N"),new pl.type.Var("Chars")])]))
+				new pl.type.Rule(new pl.type.Term("format_number_chars", [new pl.type.Var("N0"),new pl.type.Var("Chars")]), new pl.type.Term(',', [new pl.type.Term("is", [new pl.type.Var("N"),new pl.type.Var("N0")]),new pl.type.Term("number_chars", [new pl.type.Var("N"),new pl.type.Var("Chars")])]))
 			],
 			"n_newlines/3": [
-				new pl.type.Rule(new pl.type.Term("n_newlines", [new pl.type.Num(0, false),new pl.type.Var("_32507"),new pl.type.Var("_32508")]), new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32507"),new pl.type.Var("_32508")])])),
-				new pl.type.Rule(new pl.type.Term("n_newlines", [new pl.type.Var("_32360"),new pl.type.Var("_32509"),new pl.type.Var("_32512")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term(">", [new pl.type.Var("_32360"),new pl.type.Num(0, false)]),new pl.type.Term("is", [new pl.type.Var("_32358"),new pl.type.Term("-", [new pl.type.Var("_32360"),new pl.type.Num(1, false)])])]),new pl.type.Term("=", [new pl.type.Var("_32509"),new pl.type.Var("_32510")])]),new pl.type.Term(",", [new pl.type.Term("=", [new pl.type.Var("_32510"),new pl.type.Term(".", [new pl.type.Term("newline", []),new pl.type.Var("_32511")])]),new pl.type.Term("n_newlines", [new pl.type.Var("_32358"),new pl.type.Var("_32511"),new pl.type.Var("_32512")])])]))
+				new pl.type.Rule(new pl.type.Term("n_newlines", [new pl.type.Num(0, false),new pl.type.Var("_32507"),new pl.type.Var("_32508")]), new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32507"),new pl.type.Var("_32508")])])),
+				new pl.type.Rule(new pl.type.Term("n_newlines", [new pl.type.Var("_32360"),new pl.type.Var("_32509"),new pl.type.Var("_32512")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term(">", [new pl.type.Var("_32360"),new pl.type.Num(0, false)]),new pl.type.Term("is", [new pl.type.Var("_32358"),new pl.type.Term("-", [new pl.type.Var("_32360"),new pl.type.Num(1, false)])])]),new pl.type.Term("=", [new pl.type.Var("_32509"),new pl.type.Var("_32510")])]),new pl.type.Term(',', [new pl.type.Term("=", [new pl.type.Var("_32510"),new pl.type.Term(".", [new pl.type.Term("newline", []),new pl.type.Var("_32511")])]),new pl.type.Term("n_newlines", [new pl.type.Var("_32358"),new pl.type.Var("_32511"),new pl.type.Var("_32512")])])]))
 			],
 			"upto_what/4": [
-				new pl.type.Rule(new pl.type.Term("upto_what", [new pl.type.Term("[]", []),new pl.type.Var("_32513"),new pl.type.Var("_32514"),new pl.type.Var("_32517")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("=", [new pl.type.Var("_32514"),new pl.type.Term(".", [new pl.type.Var("_32513"),new pl.type.Var("_32515")])]),new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32515"),new pl.type.Var("_32516")])])]),new pl.type.Term("=", [new pl.type.Var("_32517"),new pl.type.Term(".", [new pl.type.Var("_32513"),new pl.type.Var("_32516")])])])),
-				new pl.type.Rule(new pl.type.Term("upto_what", [new pl.type.Term(".", [new pl.type.Var("_32518"),new pl.type.Var("_32349")]),new pl.type.Var("_32513"),new pl.type.Term(".", [new pl.type.Var("_32518"),new pl.type.Var("_32520")]),new pl.type.Var("_32522")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32520"),new pl.type.Var("_32521")])]),new pl.type.Term("upto_what", [new pl.type.Var("_32349"),new pl.type.Var("_32513"),new pl.type.Var("_32521"),new pl.type.Var("_32522")])])),
+				new pl.type.Rule(new pl.type.Term("upto_what", [new pl.type.Term("[]", []),new pl.type.Var("_32513"),new pl.type.Var("_32514"),new pl.type.Var("_32517")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("=", [new pl.type.Var("_32514"),new pl.type.Term(".", [new pl.type.Var("_32513"),new pl.type.Var("_32515")])]),new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32515"),new pl.type.Var("_32516")])])]),new pl.type.Term("=", [new pl.type.Var("_32517"),new pl.type.Term(".", [new pl.type.Var("_32513"),new pl.type.Var("_32516")])])])),
+				new pl.type.Rule(new pl.type.Term("upto_what", [new pl.type.Term(".", [new pl.type.Var("_32518"),new pl.type.Var("_32349")]),new pl.type.Var("_32513"),new pl.type.Term(".", [new pl.type.Var("_32518"),new pl.type.Var("_32520")]),new pl.type.Var("_32522")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32520"),new pl.type.Var("_32521")])]),new pl.type.Term("upto_what", [new pl.type.Var("_32349"),new pl.type.Var("_32513"),new pl.type.Var("_32521"),new pl.type.Var("_32522")])])),
 				new pl.type.Rule(new pl.type.Term("upto_what", [new pl.type.Term("[]", []),new pl.type.Var("__32523"),new pl.type.Var("_32524"),new pl.type.Var("_32524")]), new pl.type.Term("true", []))
 			],
 			"groups_of_three/3": [
-				new pl.type.Rule(new pl.type.Term("groups_of_three", [new pl.type.Term(".", [new pl.type.Var("_32525"),new pl.type.Term(".", [new pl.type.Var("_32526"),new pl.type.Term(".", [new pl.type.Var("_32518"),new pl.type.Term(".", [new pl.type.Var("_32527"),new pl.type.Var("_32528")])])])]),new pl.type.Var("_32529"),new pl.type.Var("_32533")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32529"),new pl.type.Var("_32530")])]),new pl.type.Term(",", [new pl.type.Term("=", [new pl.type.Var("_32530"),new pl.type.Term(".", [new pl.type.Var("_32525"),new pl.type.Term(".", [new pl.type.Var("_32526"),new pl.type.Term(".", [new pl.type.Var("_32518"),new pl.type.Var("_32531")])])])]),new pl.type.Term(",", [new pl.type.Term("=", [new pl.type.Var("_32531"),new pl.type.Term(".", [new pl.type.Term(",", []),new pl.type.Var("_32532")])]),new pl.type.Term("groups_of_three", [new pl.type.Term(".", [new pl.type.Var("_32527"),new pl.type.Var("_32528")]),new pl.type.Var("_32532"),new pl.type.Var("_32533")])])])])),
+				new pl.type.Rule(new pl.type.Term("groups_of_three", [new pl.type.Term(".", [new pl.type.Var("_32525"),new pl.type.Term(".", [new pl.type.Var("_32526"),new pl.type.Term(".", [new pl.type.Var("_32518"),new pl.type.Term(".", [new pl.type.Var("_32527"),new pl.type.Var("_32528")])])])]),new pl.type.Var("_32529"),new pl.type.Var("_32533")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32529"),new pl.type.Var("_32530")])]),new pl.type.Term(',', [new pl.type.Term("=", [new pl.type.Var("_32530"),new pl.type.Term(".", [new pl.type.Var("_32525"),new pl.type.Term(".", [new pl.type.Var("_32526"),new pl.type.Term(".", [new pl.type.Var("_32518"),new pl.type.Var("_32531")])])])]),new pl.type.Term(',', [new pl.type.Term("=", [new pl.type.Var("_32531"),new pl.type.Term(".", [new pl.type.Term(',', []),new pl.type.Var("_32532")])]),new pl.type.Term("groups_of_three", [new pl.type.Term(".", [new pl.type.Var("_32527"),new pl.type.Var("_32528")]),new pl.type.Var("_32532"),new pl.type.Var("_32533")])])])])),
 				new pl.type.Rule(new pl.type.Term("groups_of_three", [new pl.type.Var("_32354"),new pl.type.Var("_32534"),new pl.type.Var("_32535")]), new pl.type.Term("seq", [new pl.type.Var("_32354"),new pl.type.Var("_32534"),new pl.type.Var("_32535")]))
 			],
 			"cell/5": [
-				new pl.type.Rule(new pl.type.Term("cell", [new pl.type.Var("_32330"),new pl.type.Var("_32331"),new pl.type.Var("_32536"),new pl.type.Var("_32537"),new pl.type.Var("_32540")]), new pl.type.Term(",", [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term(",", [new pl.type.Term("==", [new pl.type.Var("_32536"),new pl.type.Term("[]", [])]),new pl.type.Term("=", [new pl.type.Var("_32537"),new pl.type.Var("_32538")])]),new pl.type.Term("true", [])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("reverse", [new pl.type.Var("_32536"),new pl.type.Var("_32332")]),new pl.type.Term("=", [new pl.type.Var("_32537"),new pl.type.Var("_32539")])]),new pl.type.Term("=", [new pl.type.Var("_32539"),new pl.type.Term(".", [new pl.type.Term("cell", [new pl.type.Var("_32330"),new pl.type.Var("_32331"),new pl.type.Var("_32332")]),new pl.type.Var("_32540")])])])]),new pl.type.Term("=", [new pl.type.Var("_32538"),new pl.type.Var("_32540")])]))
+				new pl.type.Rule(new pl.type.Term("cell", [new pl.type.Var("_32330"),new pl.type.Var("_32331"),new pl.type.Var("_32536"),new pl.type.Var("_32537"),new pl.type.Var("_32540")]), new pl.type.Term(',', [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term(',', [new pl.type.Term("==", [new pl.type.Var("_32536"),new pl.type.Term("[]", [])]),new pl.type.Term("=", [new pl.type.Var("_32537"),new pl.type.Var("_32538")])]),new pl.type.Term("true", [])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("reverse", [new pl.type.Var("_32536"),new pl.type.Var("_32332")]),new pl.type.Term("=", [new pl.type.Var("_32537"),new pl.type.Var("_32539")])]),new pl.type.Term("=", [new pl.type.Var("_32539"),new pl.type.Term(".", [new pl.type.Term("cell", [new pl.type.Var("_32330"),new pl.type.Var("_32331"),new pl.type.Var("_32332")]),new pl.type.Var("_32540")])])])]),new pl.type.Term("=", [new pl.type.Var("_32538"),new pl.type.Var("_32540")])]))
 			],
 			"numeric_argument/5": [
-				new pl.type.Rule(new pl.type.Term("numeric_argument", [new pl.type.Var("Ds"),new pl.type.Var("Num"),new pl.type.Var("Rest"),new pl.type.Var("Args0"),new pl.type.Var("Args")]), new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("=", [new pl.type.Var("Ds"),new pl.type.Term(".", [new pl.type.Term("*", []),new pl.type.Var("Rest")])]),new pl.type.Term("=", [new pl.type.Var("Args0"),new pl.type.Term(".", [new pl.type.Var("Num"),new pl.type.Var("Args")])])]),new pl.type.Term(",", [new pl.type.Term("phrase", [new pl.type.Term("numeric_argument_", [new pl.type.Var("Ds"),new pl.type.Var("Rest")]),new pl.type.Var("Ns")]),new pl.type.Term(",", [new pl.type.Term("foldl", [new pl.type.Term("plus_times10", []),new pl.type.Var("Ns"),new pl.type.Num(0, false),new pl.type.Var("Num")]),new pl.type.Term("=", [new pl.type.Var("Args0"),new pl.type.Var("Args")])])])]))
+				new pl.type.Rule(new pl.type.Term("numeric_argument", [new pl.type.Var("Ds"),new pl.type.Var("Num"),new pl.type.Var("Rest"),new pl.type.Var("Args0"),new pl.type.Var("Args")]), new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("=", [new pl.type.Var("Ds"),new pl.type.Term(".", [new pl.type.Term("*", []),new pl.type.Var("Rest")])]),new pl.type.Term("=", [new pl.type.Var("Args0"),new pl.type.Term(".", [new pl.type.Var("Num"),new pl.type.Var("Args")])])]),new pl.type.Term(',', [new pl.type.Term("phrase", [new pl.type.Term("numeric_argument_", [new pl.type.Var("Ds"),new pl.type.Var("Rest")]),new pl.type.Var("Ns")]),new pl.type.Term(',', [new pl.type.Term("foldl", [new pl.type.Term("plus_times10", []),new pl.type.Var("Ns"),new pl.type.Num(0, false),new pl.type.Var("Num")]),new pl.type.Term("=", [new pl.type.Var("Args0"),new pl.type.Var("Args")])])])]))
 			],
 			"numeric_argument_/4": [
-				new pl.type.Rule(new pl.type.Term("numeric_argument_", [new pl.type.Term(".", [new pl.type.Var("_32527"),new pl.type.Var("_32403")]),new pl.type.Var("_32340"),new pl.type.Var("_32541"),new pl.type.Var("_32546")]), new pl.type.Term(",", [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term(",", [new pl.type.Term("member", [new pl.type.Var("_32527"),new pl.type.Term(".", [new pl.type.Term("0", []),new pl.type.Term(".", [new pl.type.Term("1", []),new pl.type.Term(".", [new pl.type.Term("2", []),new pl.type.Term(".", [new pl.type.Term("3", []),new pl.type.Term(".", [new pl.type.Term("4", []),new pl.type.Term(".", [new pl.type.Term("5", []),new pl.type.Term(".", [new pl.type.Term("6", []),new pl.type.Term(".", [new pl.type.Term("7", []),new pl.type.Term(".", [new pl.type.Term("8", []),new pl.type.Term(".", [new pl.type.Term("9", []),new pl.type.Term("[]", [])])])])])])])])])])])]),new pl.type.Term("=", [new pl.type.Var("_32541"),new pl.type.Var("_32542")])]),new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("number_chars", [new pl.type.Var("_32358"),new pl.type.Term(".", [new pl.type.Var("_32527"),new pl.type.Term("[]", [])])]),new pl.type.Term("=", [new pl.type.Var("_32542"),new pl.type.Var("_32543")])]),new pl.type.Term(",", [new pl.type.Term("=", [new pl.type.Var("_32543"),new pl.type.Term(".", [new pl.type.Var("_32358"),new pl.type.Var("_32544")])]),new pl.type.Term("numeric_argument_", [new pl.type.Var("_32403"),new pl.type.Var("_32340"),new pl.type.Var("_32544"),new pl.type.Var("_32545")])])])]),new pl.type.Term(",", [new pl.type.Term("=", [new pl.type.Var("_32340"),new pl.type.Term(".", [new pl.type.Var("_32527"),new pl.type.Var("_32403")])]),new pl.type.Term("=", [new pl.type.Var("_32541"),new pl.type.Var("_32546")])])]),new pl.type.Term("=", [new pl.type.Var("_32545"),new pl.type.Var("_32546")])]))
+				new pl.type.Rule(new pl.type.Term("numeric_argument_", [new pl.type.Term(".", [new pl.type.Var("_32527"),new pl.type.Var("_32403")]),new pl.type.Var("_32340"),new pl.type.Var("_32541"),new pl.type.Var("_32546")]), new pl.type.Term(',', [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term(',', [new pl.type.Term("member", [new pl.type.Var("_32527"),new pl.type.Term(".", [new pl.type.Term("0", []),new pl.type.Term(".", [new pl.type.Term("1", []),new pl.type.Term(".", [new pl.type.Term("2", []),new pl.type.Term(".", [new pl.type.Term("3", []),new pl.type.Term(".", [new pl.type.Term("4", []),new pl.type.Term(".", [new pl.type.Term("5", []),new pl.type.Term(".", [new pl.type.Term("6", []),new pl.type.Term(".", [new pl.type.Term("7", []),new pl.type.Term(".", [new pl.type.Term("8", []),new pl.type.Term(".", [new pl.type.Term("9", []),new pl.type.Term("[]", [])])])])])])])])])])])]),new pl.type.Term("=", [new pl.type.Var("_32541"),new pl.type.Var("_32542")])]),new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("number_chars", [new pl.type.Var("_32358"),new pl.type.Term(".", [new pl.type.Var("_32527"),new pl.type.Term("[]", [])])]),new pl.type.Term("=", [new pl.type.Var("_32542"),new pl.type.Var("_32543")])]),new pl.type.Term(',', [new pl.type.Term("=", [new pl.type.Var("_32543"),new pl.type.Term(".", [new pl.type.Var("_32358"),new pl.type.Var("_32544")])]),new pl.type.Term("numeric_argument_", [new pl.type.Var("_32403"),new pl.type.Var("_32340"),new pl.type.Var("_32544"),new pl.type.Var("_32545")])])])]),new pl.type.Term(',', [new pl.type.Term("=", [new pl.type.Var("_32340"),new pl.type.Term(".", [new pl.type.Var("_32527"),new pl.type.Var("_32403")])]),new pl.type.Term("=", [new pl.type.Var("_32541"),new pl.type.Var("_32546")])])]),new pl.type.Term("=", [new pl.type.Var("_32545"),new pl.type.Var("_32546")])]))
 			],
 			"plus_times10/3": [
 				new pl.type.Rule(new pl.type.Term("plus_times10", [new pl.type.Var("D"),new pl.type.Var("N0"),new pl.type.Var("N")]), new pl.type.Term("is", [new pl.type.Var("N"),new pl.type.Term("+", [new pl.type.Var("D"),new pl.type.Term("*", [new pl.type.Var("N0"),new pl.type.Num(10, false)])])]))
@@ -12636,31 +12636,31 @@ var pl;
 				new pl.type.Rule(new pl.type.Term("radix_error", [new pl.type.Term("uppercase", []),new pl.type.Var("_32547"),new pl.type.Var("_32550"),new pl.type.Var("_32551")]), new pl.type.Term("format_", [new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("~", []),new pl.type.Term(".", [new pl.type.Term("d", []),new pl.type.Term(".", [new pl.type.Term("R", []),new pl.type.Term("[]", [])])])])])]),new pl.type.Term(".", [new pl.type.Var("_32547"),new pl.type.Term("[]", [])]),new pl.type.Var("_32550"),new pl.type.Var("_32551")]))
 			],
 			"integer_to_radix/4": [
-				new pl.type.Rule(new pl.type.Term("integer_to_radix", [new pl.type.Var("I0"),new pl.type.Var("R"),new pl.type.Var("Which"),new pl.type.Var("Cs")]), new pl.type.Term(",", [new pl.type.Term("is", [new pl.type.Var("I"),new pl.type.Var("I0")]),new pl.type.Term(",", [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("integer", [new pl.type.Var("I")]),new pl.type.Term("true", [])]),new pl.type.Term("throw", [new pl.type.Term("error", [new pl.type.Term("type_error", [new pl.type.Term("integer", []),new pl.type.Var("I")]),new pl.type.Term("/", [new pl.type.Term("integer_to_radix", []),new pl.type.Num(4, false)])])])]),new pl.type.Term(",", [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("integer", [new pl.type.Var("R")]),new pl.type.Term("true", [])]),new pl.type.Term("throw", [new pl.type.Term("error", [new pl.type.Term("type_error", [new pl.type.Term("integer", []),new pl.type.Var("R")]),new pl.type.Term("/", [new pl.type.Term("integer_to_radix", []),new pl.type.Num(4, false)])])])]),new pl.type.Term(",", [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("\\+", [new pl.type.Term("between", [new pl.type.Num(2, false),new pl.type.Num(36, false),new pl.type.Var("R")])]),new pl.type.Term(",", [new pl.type.Term("phrase", [new pl.type.Term("radix_error", [new pl.type.Var("Which"),new pl.type.Var("R")]),new pl.type.Var("Es")]),new pl.type.Term("throw", [new pl.type.Term("error", [new pl.type.Term("domain_error", [new pl.type.Term("format_string", []),new pl.type.Var("Es")]),new pl.type.Term("/", [new pl.type.Term("integer_to_radix", []),new pl.type.Num(4, false)])])])])]),new pl.type.Term("true", [])]),new pl.type.Term(",", [new pl.type.Term("digits", [new pl.type.Var("Which"),new pl.type.Var("Ds")]),new pl.type.Term(",", [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("<", [new pl.type.Var("I"),new pl.type.Num(0, false)]),new pl.type.Term(",", [new pl.type.Term("is", [new pl.type.Var("Pos"),new pl.type.Term("abs", [new pl.type.Var("I")])]),new pl.type.Term("phrase", [new pl.type.Term("integer_to_radix_", [new pl.type.Var("Pos"),new pl.type.Var("R"),new pl.type.Var("Ds")]),new pl.type.Var("Cs0"),new pl.type.Term(".", [new pl.type.Term("-", []),new pl.type.Term("[]", [])])])])]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("=:=", [new pl.type.Var("I"),new pl.type.Num(0, false)]),new pl.type.Term("=", [new pl.type.Var("Cs0"),new pl.type.Term(".", [new pl.type.Term("0", []),new pl.type.Term("[]", [])])])]),new pl.type.Term("phrase", [new pl.type.Term("integer_to_radix_", [new pl.type.Var("I"),new pl.type.Var("R"),new pl.type.Var("Ds")]),new pl.type.Var("Cs0")])])]),new pl.type.Term("reverse", [new pl.type.Var("Cs0"),new pl.type.Var("Cs")])])])])])])]))
+				new pl.type.Rule(new pl.type.Term("integer_to_radix", [new pl.type.Var("I0"),new pl.type.Var("R"),new pl.type.Var("Which"),new pl.type.Var("Cs")]), new pl.type.Term(',', [new pl.type.Term("is", [new pl.type.Var("I"),new pl.type.Var("I0")]),new pl.type.Term(',', [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("integer", [new pl.type.Var("I")]),new pl.type.Term("true", [])]),new pl.type.Term("throw", [new pl.type.Term("error", [new pl.type.Term("type_error", [new pl.type.Term("integer", []),new pl.type.Var("I")]),new pl.type.Term("/", [new pl.type.Term("integer_to_radix", []),new pl.type.Num(4, false)])])])]),new pl.type.Term(',', [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("integer", [new pl.type.Var("R")]),new pl.type.Term("true", [])]),new pl.type.Term("throw", [new pl.type.Term("error", [new pl.type.Term("type_error", [new pl.type.Term("integer", []),new pl.type.Var("R")]),new pl.type.Term("/", [new pl.type.Term("integer_to_radix", []),new pl.type.Num(4, false)])])])]),new pl.type.Term(',', [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("\\+", [new pl.type.Term("between", [new pl.type.Num(2, false),new pl.type.Num(36, false),new pl.type.Var("R")])]),new pl.type.Term(',', [new pl.type.Term("phrase", [new pl.type.Term("radix_error", [new pl.type.Var("Which"),new pl.type.Var("R")]),new pl.type.Var("Es")]),new pl.type.Term("throw", [new pl.type.Term("error", [new pl.type.Term("domain_error", [new pl.type.Term("format_string", []),new pl.type.Var("Es")]),new pl.type.Term("/", [new pl.type.Term("integer_to_radix", []),new pl.type.Num(4, false)])])])])]),new pl.type.Term("true", [])]),new pl.type.Term(',', [new pl.type.Term("digits", [new pl.type.Var("Which"),new pl.type.Var("Ds")]),new pl.type.Term(',', [new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("<", [new pl.type.Var("I"),new pl.type.Num(0, false)]),new pl.type.Term(',', [new pl.type.Term("is", [new pl.type.Var("Pos"),new pl.type.Term("abs", [new pl.type.Var("I")])]),new pl.type.Term("phrase", [new pl.type.Term("integer_to_radix_", [new pl.type.Var("Pos"),new pl.type.Var("R"),new pl.type.Var("Ds")]),new pl.type.Var("Cs0"),new pl.type.Term(".", [new pl.type.Term("-", []),new pl.type.Term("[]", [])])])])]),new pl.type.Term(";", [new pl.type.Term("->", [new pl.type.Term("=:=", [new pl.type.Var("I"),new pl.type.Num(0, false)]),new pl.type.Term("=", [new pl.type.Var("Cs0"),new pl.type.Term(".", [new pl.type.Term("0", []),new pl.type.Term("[]", [])])])]),new pl.type.Term("phrase", [new pl.type.Term("integer_to_radix_", [new pl.type.Var("I"),new pl.type.Var("R"),new pl.type.Var("Ds")]),new pl.type.Var("Cs0")])])]),new pl.type.Term("reverse", [new pl.type.Var("Cs0"),new pl.type.Var("Cs")])])])])])])]))
 			],
 			"integer_to_radix_/5": [
-				new pl.type.Rule(new pl.type.Term("integer_to_radix_", [new pl.type.Num(0, false),new pl.type.Var("__32552"),new pl.type.Var("__32553"),new pl.type.Var("_32554"),new pl.type.Var("_32555")]), new pl.type.Term(",", [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32554"),new pl.type.Var("_32555")])])),
-				new pl.type.Rule(new pl.type.Term("integer_to_radix_", [new pl.type.Var("_32556"),new pl.type.Var("_32547"),new pl.type.Var("_32403"),new pl.type.Var("_32559"),new pl.type.Var("_32562")]), new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term(",", [new pl.type.Term("is", [new pl.type.Var("_32557"),new pl.type.Term("mod", [new pl.type.Var("_32556"),new pl.type.Var("_32547")])]),new pl.type.Term(",", [new pl.type.Term("nth0", [new pl.type.Var("_32557"),new pl.type.Var("_32403"),new pl.type.Var("_32527")]),new pl.type.Term("is", [new pl.type.Var("_32558"),new pl.type.Term("//", [new pl.type.Var("_32556"),new pl.type.Var("_32547")])])])]),new pl.type.Term("=", [new pl.type.Var("_32559"),new pl.type.Var("_32560")])]),new pl.type.Term(",", [new pl.type.Term("=", [new pl.type.Var("_32560"),new pl.type.Term(".", [new pl.type.Var("_32527"),new pl.type.Var("_32561")])]),new pl.type.Term("integer_to_radix_", [new pl.type.Var("_32558"),new pl.type.Var("_32547"),new pl.type.Var("_32403"),new pl.type.Var("_32561"),new pl.type.Var("_32562")])])]))
+				new pl.type.Rule(new pl.type.Term("integer_to_radix_", [new pl.type.Num(0, false),new pl.type.Var("__32552"),new pl.type.Var("__32553"),new pl.type.Var("_32554"),new pl.type.Var("_32555")]), new pl.type.Term(',', [new pl.type.Term("!", []),new pl.type.Term("=", [new pl.type.Var("_32554"),new pl.type.Var("_32555")])])),
+				new pl.type.Rule(new pl.type.Term("integer_to_radix_", [new pl.type.Var("_32556"),new pl.type.Var("_32547"),new pl.type.Var("_32403"),new pl.type.Var("_32559"),new pl.type.Var("_32562")]), new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term(',', [new pl.type.Term("is", [new pl.type.Var("_32557"),new pl.type.Term("mod", [new pl.type.Var("_32556"),new pl.type.Var("_32547")])]),new pl.type.Term(',', [new pl.type.Term("nth0", [new pl.type.Var("_32557"),new pl.type.Var("_32403"),new pl.type.Var("_32527")]),new pl.type.Term("is", [new pl.type.Var("_32558"),new pl.type.Term("//", [new pl.type.Var("_32556"),new pl.type.Var("_32547")])])])]),new pl.type.Term("=", [new pl.type.Var("_32559"),new pl.type.Var("_32560")])]),new pl.type.Term(',', [new pl.type.Term("=", [new pl.type.Var("_32560"),new pl.type.Term(".", [new pl.type.Var("_32527"),new pl.type.Var("_32561")])]),new pl.type.Term("integer_to_radix_", [new pl.type.Var("_32558"),new pl.type.Var("_32547"),new pl.type.Var("_32403"),new pl.type.Var("_32561"),new pl.type.Var("_32562")])])]))
 			],
 			"digits/2": [
 				new pl.type.Rule(new pl.type.Term("digits", [new pl.type.Term("lowercase", []),new pl.type.Term(".", [new pl.type.Term("0", []),new pl.type.Term(".", [new pl.type.Term("1", []),new pl.type.Term(".", [new pl.type.Term("2", []),new pl.type.Term(".", [new pl.type.Term("3", []),new pl.type.Term(".", [new pl.type.Term("4", []),new pl.type.Term(".", [new pl.type.Term("5", []),new pl.type.Term(".", [new pl.type.Term("6", []),new pl.type.Term(".", [new pl.type.Term("7", []),new pl.type.Term(".", [new pl.type.Term("8", []),new pl.type.Term(".", [new pl.type.Term("9", []),new pl.type.Term(".", [new pl.type.Term("a", []),new pl.type.Term(".", [new pl.type.Term("b", []),new pl.type.Term(".", [new pl.type.Term("c", []),new pl.type.Term(".", [new pl.type.Term("d", []),new pl.type.Term(".", [new pl.type.Term("e", []),new pl.type.Term(".", [new pl.type.Term("f", []),new pl.type.Term(".", [new pl.type.Term("g", []),new pl.type.Term(".", [new pl.type.Term("h", []),new pl.type.Term(".", [new pl.type.Term("i", []),new pl.type.Term(".", [new pl.type.Term("j", []),new pl.type.Term(".", [new pl.type.Term("k", []),new pl.type.Term(".", [new pl.type.Term("l", []),new pl.type.Term(".", [new pl.type.Term("m", []),new pl.type.Term(".", [new pl.type.Term("n", []),new pl.type.Term(".", [new pl.type.Term("o", []),new pl.type.Term(".", [new pl.type.Term("p", []),new pl.type.Term(".", [new pl.type.Term("q", []),new pl.type.Term(".", [new pl.type.Term("r", []),new pl.type.Term(".", [new pl.type.Term("s", []),new pl.type.Term(".", [new pl.type.Term("t", []),new pl.type.Term(".", [new pl.type.Term("u", []),new pl.type.Term(".", [new pl.type.Term("v", []),new pl.type.Term(".", [new pl.type.Term("w", []),new pl.type.Term(".", [new pl.type.Term("x", []),new pl.type.Term(".", [new pl.type.Term("y", []),new pl.type.Term(".", [new pl.type.Term("z", []),new pl.type.Term("[]", [])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])]), null),
 				new pl.type.Rule(new pl.type.Term("digits", [new pl.type.Term("uppercase", []),new pl.type.Term(".", [new pl.type.Term("0", []),new pl.type.Term(".", [new pl.type.Term("1", []),new pl.type.Term(".", [new pl.type.Term("2", []),new pl.type.Term(".", [new pl.type.Term("3", []),new pl.type.Term(".", [new pl.type.Term("4", []),new pl.type.Term(".", [new pl.type.Term("5", []),new pl.type.Term(".", [new pl.type.Term("6", []),new pl.type.Term(".", [new pl.type.Term("7", []),new pl.type.Term(".", [new pl.type.Term("8", []),new pl.type.Term(".", [new pl.type.Term("9", []),new pl.type.Term(".", [new pl.type.Term("A", []),new pl.type.Term(".", [new pl.type.Term("B", []),new pl.type.Term(".", [new pl.type.Term("C", []),new pl.type.Term(".", [new pl.type.Term("D", []),new pl.type.Term(".", [new pl.type.Term("E", []),new pl.type.Term(".", [new pl.type.Term("F", []),new pl.type.Term(".", [new pl.type.Term("G", []),new pl.type.Term(".", [new pl.type.Term("H", []),new pl.type.Term(".", [new pl.type.Term("I", []),new pl.type.Term(".", [new pl.type.Term("J", []),new pl.type.Term(".", [new pl.type.Term("K", []),new pl.type.Term(".", [new pl.type.Term("L", []),new pl.type.Term(".", [new pl.type.Term("M", []),new pl.type.Term(".", [new pl.type.Term("N", []),new pl.type.Term(".", [new pl.type.Term("O", []),new pl.type.Term(".", [new pl.type.Term("P", []),new pl.type.Term(".", [new pl.type.Term("Q", []),new pl.type.Term(".", [new pl.type.Term("R", []),new pl.type.Term(".", [new pl.type.Term("S", []),new pl.type.Term(".", [new pl.type.Term("T", []),new pl.type.Term(".", [new pl.type.Term("U", []),new pl.type.Term(".", [new pl.type.Term("V", []),new pl.type.Term(".", [new pl.type.Term("W", []),new pl.type.Term(".", [new pl.type.Term("X", []),new pl.type.Term(".", [new pl.type.Term("Y", []),new pl.type.Term(".", [new pl.type.Term("Z", []),new pl.type.Term("[]", [])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])]), null)
 			],
 			"format/2": [
-				new pl.type.Rule(new pl.type.Term("format", [new pl.type.Var("Fs"),new pl.type.Var("Args")]), new pl.type.Term(",", [new pl.type.Term("phrase", [new pl.type.Term("format_", [new pl.type.Var("Fs"),new pl.type.Var("Args")]),new pl.type.Var("Cs")]),new pl.type.Term("maplist", [new pl.type.Term("write", []),new pl.type.Var("Cs")])]))
+				new pl.type.Rule(new pl.type.Term("format", [new pl.type.Var("Fs"),new pl.type.Var("Args")]), new pl.type.Term(',', [new pl.type.Term("phrase", [new pl.type.Term("format_", [new pl.type.Var("Fs"),new pl.type.Var("Args")]),new pl.type.Var("Cs")]),new pl.type.Term("maplist", [new pl.type.Term("write", []),new pl.type.Var("Cs")])]))
 			],
 			"format/3": [
-				new pl.type.Rule(new pl.type.Term("format", [new pl.type.Var("Stream"),new pl.type.Var("Fs"),new pl.type.Var("Args")]), new pl.type.Term(",", [new pl.type.Term("phrase", [new pl.type.Term("format_", [new pl.type.Var("Fs"),new pl.type.Var("Args")]),new pl.type.Var("Cs")]),new pl.type.Term("maplist", [new pl.type.Term("write", [new pl.type.Var("Stream")]),new pl.type.Var("Cs")])]))
+				new pl.type.Rule(new pl.type.Term("format", [new pl.type.Var("Stream"),new pl.type.Var("Fs"),new pl.type.Var("Args")]), new pl.type.Term(',', [new pl.type.Term("phrase", [new pl.type.Term("format_", [new pl.type.Var("Fs"),new pl.type.Var("Args")]),new pl.type.Var("Cs")]),new pl.type.Term("maplist", [new pl.type.Term("write", [new pl.type.Var("Stream")]),new pl.type.Var("Cs")])]))
 			],
 			"unique_variable_names/2": [
-				new pl.type.Rule(new pl.type.Term("unique_variable_names", [new pl.type.Var("Term"),new pl.type.Var("VNs")]), new pl.type.Term(",", [new pl.type.Term("term_variables", [new pl.type.Var("Term"),new pl.type.Var("Vs")]),new pl.type.Term("foldl", [new pl.type.Term("var_name", []),new pl.type.Var("Vs"),new pl.type.Var("VNs"),new pl.type.Num(0, false),new pl.type.Var("_")])]))
+				new pl.type.Rule(new pl.type.Term("unique_variable_names", [new pl.type.Var("Term"),new pl.type.Var("VNs")]), new pl.type.Term(',', [new pl.type.Term("term_variables", [new pl.type.Var("Term"),new pl.type.Var("Vs")]),new pl.type.Term("foldl", [new pl.type.Term("var_name", []),new pl.type.Var("Vs"),new pl.type.Var("VNs"),new pl.type.Num(0, false),new pl.type.Var("_")])]))
 			],
 			"seq/3": [
 				new pl.type.Rule(new pl.type.Term("seq", [new pl.type.Term("[]", []),new pl.type.Var("_32563"),new pl.type.Var("_32563")]), new pl.type.Term("true", [])),
 				new pl.type.Rule(new pl.type.Term("seq", [new pl.type.Term(".", [new pl.type.Var("_32345"),new pl.type.Var("_32332")]),new pl.type.Term(".", [new pl.type.Var("_32345"),new pl.type.Var("_32565")]),new pl.type.Var("_32566")]), new pl.type.Term("seq", [new pl.type.Var("_32332"),new pl.type.Var("_32565"),new pl.type.Var("_32566")]))
 			],
 			"var_name/4": [
-				new pl.type.Rule(new pl.type.Term("var_name", [new pl.type.Var("V"),new pl.type.Term("=", [new pl.type.Var("Name"),new pl.type.Var("V")]),new pl.type.Var("Num0"),new pl.type.Var("Num")]), new pl.type.Term(",", [new pl.type.Term(":", [new pl.type.Term("charsio", []),new pl.type.Term("fabricate_var_name", [new pl.type.Term("numbervars", []),new pl.type.Var("Name"),new pl.type.Var("Num0")])]),new pl.type.Term("is", [new pl.type.Var("Num"),new pl.type.Term("+", [new pl.type.Var("Num0"),new pl.type.Num(1, false)])])]))
+				new pl.type.Rule(new pl.type.Term("var_name", [new pl.type.Var("V"),new pl.type.Term("=", [new pl.type.Var("Name"),new pl.type.Var("V")]),new pl.type.Var("Num0"),new pl.type.Var("Num")]), new pl.type.Term(',', [new pl.type.Term(":", [new pl.type.Term("charsio", []),new pl.type.Term("fabricate_var_name", [new pl.type.Term("numbervars", []),new pl.type.Var("Name"),new pl.type.Var("Num0")])]),new pl.type.Term("is", [new pl.type.Var("Num"),new pl.type.Term("+", [new pl.type.Var("Num0"),new pl.type.Num(1, false)])])]))
 			]
 		};
 	};
@@ -12784,7 +12784,7 @@ var pl;
                     var nthread = new pl.type.Thread(thread.session);
                     var template = thread.next_free_variable();
                     thread.session.renamed_variables = {};
-                    var future_goal = new pl.type.Term(",", [new pl.type.Term("call", [goal.rename(thread)]), new pl.type.Term("=", [template, resolve.rename(thread)])]);
+                    var future_goal = new pl.type.Term(',', [new pl.type.Term("call", [goal.rename(thread)]), new pl.type.Term("=", [template, resolve.rename(thread)])]);
                     nthread.add_goal(future_goal);
                     var handlers = {
                         success: function(answer) {
