@@ -1,30 +1,34 @@
 %%% jsonparse/2 jsonparse(JSONString, Object).
 %%% prima funzione, vera quando la stringa può essere scomposta in stringhe numeri o termini composti
-jsonparse("", Object).
+jsonparse("", []).
+
 jsonparse(JSONString, Object) :- 
     string(JSONString),
     split_string(JSONString, "\s", "\s", X), jsonparse(X, Object).
 
 jsonparse(X, Object) :-
     (Xo = "{", Xc = "}", X is [Xo | Members], last(X, Xc), jsonparse([Xo | Members], Object));
-    (Yo = "[", Yc = "]", X is [Yo | Elements], last(X, Yc), jsonparse([Yo | Members], Object));
+    (Yo = "[", Yc = "]", X is [Yo | Elements], last(X, Yc), jsonparse([Yo | Members], Object)).
 
 jsonparse([Xo | Members], Object) :- 
-    (Members is [Pair | MoreMembers], jsonparse([[] | Xc], [Xo]); 
-    jsonparse([[Pair | MoreMembers] | Xc], [Yo])).
+    delete([Xo | Members], Xo, New),
+    reverse(New, R_new),
+    delete(R_new, Xc, Members),
+    (Members is [Pair | MoreMembers], jsonparse([[]], Object); 
+    jsonparse([Pair | MoreMembers], [])).
 
-jsonparse([[] | Xc], [Xo]) :- 
-    jsonparse([], [Xo | Xc]).
+jsonparse([], Object) :- 
+    jsonparse([], [Xo, Xc]).
 
-jsonparse([[Pair | MoreMembers] | Xc], [Xo]) :- 
+jsonparse([Pair | MoreMembers], Object) :- 
     Punti = ":",
-    Pair is [Attribute | Punti]] | Value],
-    jsonparse([[[[[Attribute | Punti]] | Value] | MoreMembers] | Xc], [Xo]).
+    Pair is [Attribute , Punti , Value],
+    jsonparse([[Attribute , Punti , Value] | MoreMembers], Object).
 
-jsonparse([[[[Attribute | Punti] | Value] | MoreMembers]  | Xc], [Xo]) :-
+jsonparse([[Attribute, Punti, Value] | MoreMembers], Object) :-
     string(Attribute),
     (string(Value); jsonobj(Value); number(Value)),
-    jsonparse([Xc], [Xo | [[[Attribute | Punti] | Value] | MoreMembers]]).
+    jsonparse([], [Xo, [[Attribute, Punti, Value] | MoreMembers], Xc]).
 
 jsonparse([Yo | Elements], Object) :-
     (jsonparse([[[Value| Virgola] | MoreValues] | Yc], [Yo]); jsonparse([[] | Yc], [Yo])).
