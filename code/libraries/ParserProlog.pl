@@ -6,14 +6,17 @@ jsonparse(JSONString, Object) :-
     string(JSONString),
     split_string(JSONString, "\s", "\s", X), jsonparse(X, Object).
 
-jsonparse(X, Object) :-
-    (Xo = "{", Xc = "}", X is [Xo | Members], last(X, Xc), jsonparse([Xo | Members], Object));
-    (Yo = "[", Yc = "]", X is [Yo | Elements], last(X, Yc), jsonparse([Yo | Members], Object)).
+jsonparse(X, Object) :- 
+    Xo = "{",
+    Xc = "}",   
+    (X is [Xo | Members], last(X, Xc), jsonparse([Xo | Members], Object));
+    (X is [Yo | Elements], last(X, Yc), jsonparse([Yo | Members], Object)).
 
 jsonparse([Xo | Members], Object) :- 
     delete([Xo | Members], Xo, New),
     reverse(New, R_new),
-    delete(R_new, Xc, Members),
+    delete(R_new, Xc, New2),
+    reverse(New2, Members),
     (Members is [Pair | MoreMembers], jsonparse([[]], Object); 
     jsonparse([Pair | MoreMembers], [])).
 
@@ -21,7 +24,7 @@ jsonparse([], Object) :-
     jsonparse([], [Xo, Xc]).
 
 jsonparse([Pair | MoreMembers], Object) :- 
-    Punti = ":",
+    string_chars(Punti, ":"),
     Pair is [Attribute , Punti , Value],
     jsonparse([[Attribute , Punti , Value] | MoreMembers], Object).
 
@@ -30,20 +33,26 @@ jsonparse([[Attribute, Punti, Value] | MoreMembers], Object) :-
     (string(Value); jsonobj(Value); number(Value)),
     jsonparse([], [Xo, [[Attribute, Punti, Value] | MoreMembers], Xc]).
 
-jsonparse([Yo | Elements], Object) :-
-    (jsonparse([[[Value| Virgola] | MoreValues] | Yc], [Yo]); jsonparse([[] | Yc], [Yo])).
+jsonparse([Yo | Elements], Object) :- 
+    delete([Yo | Elements], Yo, New),
+    reverse(New, R_new),
+    delete(R_new, Yc,  New2),
+    reverse(New2, Elements),
+    string_chars(Virgola, ","),
+    Elements is [[Value, Virgola] | MoreValues],
+    (jsonparse([[Value, Virgola] | MoreValues], Object); jsonparse([[]], Object)).
 
-jsonparse([[[Value| Virgola] | MoreValues] | Yc], [Yc]) :-
-    (string(Value); jsonobj(Value); number(Value)),
-    jsonparse([Yc], [Yo | [[Value| Virgola] | MoreValues]]).
+jsonparse([[[Value, Virgola] | MoreValues]], Object) :-
+    (string(Value); Value is Object; number(Value)),
+    jsonparse([], [Yo, [[Value, Virgola] | MoreValues], Yc]).
 
-jsonparse([[] | Yc], [Yo]) :- 
-    jsonparse([Yc], [Yo | []]).
+jsonparse([[]], Object) :- 
+    jsonparse([], [Yo, Yc]).
 
-jsonparse([], [Xo | Xc]).
+jsonparse([], [Xo, [[Attribute, Punti, Value] | MoreMembers], Xc]).
 jsonparse([Yc], [Yo | [[Value| Virgola] | MoreValues]]).
-jsonparse([], [Yo | Yc]).
-jsonparse([Xc], [Xo | [[[Attribute | Punti] | Value] | MoreMembers]]).
+jsonparse([], [Yo, Yc]).
+jsonparse([], [Yo, [[Value, Virgola] | MoreValues], Yc]).
 
 
 
