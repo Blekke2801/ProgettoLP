@@ -11,10 +11,10 @@ jsonparse(JSONString, Object) :-
 
 
 jsonparse(Xt, Object) :- 
-    Xo = "{",
-    Xc = "}",
-    Yo = "[",
-    Yc = "]",   
+    Xo is "{",
+    Xc is "}",
+    Yo is "[",
+    Yc is "]",   
     (Xt is [Xo | Members], last(Xt, Xc), jsonparse([Xo | Members], Object));
     (Xt is [Yo | Elements], last(Xt, Yc), jsonparse([Yo | Elements], Object)).
 
@@ -97,7 +97,7 @@ jsonaccess(Object, [Field | MoreFields], Result) :-
     jsonaccess([[Attribute , Punti , Value] | MoreMembers], [Field | MoreFields], Result).
 
 jsonaccess([[Attribute , Punti , Value] | MoreMembers], [Field | MoreFields], Result) :-
-    Attribute =:= Field,
+    Attribute == Field,
     jsonaccess([MoreMembers], [MoreFields], [[Field, Punti, Value]]).
 
 */
