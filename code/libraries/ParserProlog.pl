@@ -1,39 +1,50 @@
 %%% jsonparse/2 jsonparse(JSONString, Object).
 %%% prima funzione, vera quando la stringa può essere scomposta in stringhe numeri o termini composti
 
+%%% stringanalizer/2 stringanalizer(String,List).
+%%% mi serve per dividere in una lista tutti gli argomenti della string json per esempio se c'è presente una stringa con degli spazi in mezzo unirà dal primo apice fino al secondo apice
 %%% riconoscimento di jsonobj
 
 jsonobj(Members) :- 
     length(Members,0);
     (
-        Members is [Pair, ','| MoreMembers], 
-        Pair is [Attribute, ':', Value], 
         string(Attribute), 
         (
             string(Value); 
             number(Value); 
-            Value is jsonobj(Members)
-        )
+            jsonobj(Value)
+        ),
+        Pair is [Attribute, ':', Value], 
+        Members is [Pair, ','| MoreMembers]
     ).
 
 %%%riconoscimento di jsonarray
 jsonarray(Elements) :-
     length(Elements, 0); 
     (
-        Elements is [Value | MoreValues],
         (
             string(Value); 
-            Value is jsonobj(Members); 
+            jsonobj(Value); 
             number(Value) 
-        )
+        ),
+        Elements is [Value | MoreValues]
     ).
 
 
 jsonparse("", []).
 
 jsonparse(JSONString, Object) :- 
-    string(JSONString),
-    split_string(JSONString, "\s\n","\s\n", X),
+    (
+        (
+            atom(JSONString),
+            atom_string(JSONString, String),
+            split_string(String, "\s\n","\s\n", Xt)
+        );
+        (
+            string(JSONString),
+            split_string(JSONString, "\s\n","\s\n", Xt)
+        )
+    ),
     jsonparse(Xt, Object).
 
 %%% controllo delle parentesi all'inizio e alla fine
@@ -81,9 +92,9 @@ jsonparse([[Attribute, ':', Value] | MoreMembers], Object) :-
     jsonparse(MoreMembers, NewObject).
 
 jsonparse(MoreMembers, NewObject) :-
-    MoreMembers is jsonobj(Members),
+    jsonobj(MoreMembers),
     Object is NewObject,
-    jsonparse([Pair | MoreMembers], Object).
+    jsonparse(jsonobj(MoreMembers), Object).
 
 jsonparse([B | Other], Object) :- 
     (
@@ -114,9 +125,9 @@ jsonparse([Value | MoreValues], Object) :-
     jsonparse(MoreValues, NewObject).
 
 jsonparse(MoreValues, NewObject) :-
-    MoreValues is [Value | MoreValues],
+    jsonarray(MoreValues),
     Object is NewObject,
-    jsonparse([Value | MoreValues], Object).
+    jsonparse(jsonarray(MoreValues), Object).
 
 jsonparse([], NewObject).
 jsonparse([], []).
