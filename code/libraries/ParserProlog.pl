@@ -1,10 +1,45 @@
+%%% conta l'occorrenza di un elemento in una lista
+count([],Char, 0).
+count([H|Tail], Char, N) :-
+    H == Char,
+    N1 is N + 1,
+    count(Tail, N1).
+%%% stringanalizer/2 stringanalizer(String,List).
+%%% mi serve per dividere in una lista tutti gli argomenti della string json per esempio se c'è presente una stringa con degli spazi in mezzo unirà dal primo apice fino al secondo apice
+
+stringanalizer([],List).
+
+unify([],List) :-
+    stringanalizer([], List).
+
+unify(Chars, List) :-
+    Chars is [A | Other],
+    List is [B | Other],
+    Char is [A],
+    (
+        (
+            A == '\"',
+            count(List, '\"', N),
+            (N mod 2) =:= 0,
+            unify(String, Char),
+            string_chars(C, String),
+            append(List, C, NextList)
+        );
+        append(List, Char, NextList)
+    ),
+    unify(Other, NextList).
+
+
+stringanalizer(String, List) :-
+    string_chars(String, Chars),
+    delete(Chars, '\s', Chars2),
+    delete(Chars2, '\n', Chars),
+    unify(Chars,List).
+
 %%% jsonparse/2 jsonparse(JSONString, Object).
 %%% prima funzione, vera quando la stringa può essere scomposta in stringhe numeri o termini composti
 
-%%% stringanalizer/2 stringanalizer(String,List).
-%%% mi serve per dividere in una lista tutti gli argomenti della string json per esempio se c'è presente una stringa con degli spazi in mezzo unirà dal primo apice fino al secondo apice
 %%% riconoscimento di jsonobj
-
 jsonobj(Members) :- 
     length(Members,0);
     (
@@ -15,7 +50,8 @@ jsonobj(Members) :-
             jsonobj(Value)
         ),
         Pair is [Attribute, ':', Value], 
-        Members is [Pair, ','| MoreMembers]
+        Members is [Pair, ','| MoreMembers],
+        jsonobj(MoreMembers)
     ).
 
 %%%riconoscimento di jsonarray
@@ -27,7 +63,8 @@ jsonarray(Elements) :-
             jsonobj(Value); 
             number(Value) 
         ),
-        Elements is [Value | MoreValues]
+        Elements is [Value | MoreValues],
+        jsonarray(MoreValues)
     ).
 
 
@@ -38,11 +75,11 @@ jsonparse(JSONString, Object) :-
         (
             atom(JSONString),
             atom_string(JSONString, String),
-            split_string(String, "\s\n","\s\n", Xt)
+            stringanalizer(String,Xt)
         );
         (
             string(JSONString),
-            split_string(JSONString, "\s\n","\s\n", Xt)
+            stringanalizer(JsonString,Xt)
         )
     ),
     jsonparse(Xt, Object).
@@ -93,8 +130,7 @@ jsonparse([[Attribute, ':', Value] | MoreMembers], Object) :-
 
 jsonparse(MoreMembers, NewObject) :-
     jsonobj(MoreMembers),
-    Object is NewObject,
-    jsonparse(jsonobj(MoreMembers), Object).
+    jsonparse(jsonobj(MoreMembers), NewObject).
 
 jsonparse([B | Other], Object) :- 
     (
@@ -126,8 +162,7 @@ jsonparse([Value | MoreValues], Object) :-
 
 jsonparse(MoreValues, NewObject) :-
     jsonarray(MoreValues),
-    Object is NewObject,
-    jsonparse(jsonarray(MoreValues), Object).
+    jsonparse(jsonarray(MoreValues), NewObject).
 
 jsonparse([], NewObject).
 jsonparse([], []).
