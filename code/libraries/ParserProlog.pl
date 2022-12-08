@@ -4,13 +4,13 @@ count([H|Tail], Char, N) :-
     H == Char,
     N1 is N + 1,
     count(Tail, N1).
-%%% stringanalizer/2 stringanalizer(String,List).
+%%% stringunifier/2 stringunifier(String,List).
 %%% mi serve per dividere in una lista tutti gli argomenti della string json per esempio se c'è presente una stringa con degli spazi in mezzo unirà dal primo apice fino al secondo apice
 
-stringanalizer([],List).
+stringunifyer([],List).
 
 unify([],List) :-
-    stringanalizer([], List).
+    stringunifier([], List).
 
 unify(Chars, List) :-
     Chars is [A | Other],
@@ -30,11 +30,11 @@ unify(Chars, List) :-
     unify(Other, NextList).
 
 
-stringanalizer(String, List) :-
+stringunifier(String, List) :-
     string_chars(String, Chars),
     delete(Chars, '\s', Chars2),
-    delete(Chars2, '\n', Chars),
-    unify(Chars,List).
+    delete(Chars2, '\n', Chars3),
+    unify(Chars3,List).
 
 %%% jsonparse/2 jsonparse(JSONString, Object).
 %%% prima funzione, vera quando la stringa può essere scomposta in stringhe numeri o termini composti
