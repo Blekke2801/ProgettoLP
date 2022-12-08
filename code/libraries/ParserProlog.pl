@@ -7,34 +7,45 @@ count([H|Tail], Char, N) :-
 %%% stringunifier/2 stringunifier(String,List).
 %%% mi serve per dividere in una lista tutti gli argomenti della string json per esempio se c'è presente una stringa con degli spazi in mezzo unirà dal primo apice fino al secondo apice
 
-stringunifyer([],List).
+stringunifier("", [A | Other]).
+stringunifier("", []).
 
 unify([],List) :-
-    stringunifier([], List).
+    stringunifier("", List).
 
-unify(Chars, List) :-
-    Chars is [A | Other],
-    List is [B | Other],
+unify([A | As], List) :-
     Char is [A],
     (
         (
             A == '\"',
             count(List, '\"', N),
             (N mod 2) =:= 0,
-            unify(String, Char),
-            string_chars(C, String),
+            unify(As, Char),
+            string_chars(C, Char),
             append(List, C, NextList)
         );
         append(List, Char, NextList)
     ),
-    unify(Other, NextList).
+    unify(As, NextList).
 
+unify([A | As], ['\"' | Other]) :-
+    Char is [A],
+    (
+        A == '\"',
+        count(List, '\"', N),
+        (N mod 2) @> 0,
+        append(['\"' | Other], ['\"'], NextList),
+        unify([], NextList)
+    );
+    (
+        append(List, Char, NextList),
+        unify(As, NextList)
+    ).
+    
 
 stringunifier(String, List) :-
     string_chars(String, Chars),
-    delete(Chars, '\s', Chars2),
-    delete(Chars2, '\n', Chars3),
-    unify(Chars3,List).
+    unify(Chars,List).
 
 %%% jsonparse/2 jsonparse(JSONString, Object).
 %%% prima funzione, vera quando la stringa può essere scomposta in stringhe numeri o termini composti
