@@ -3,15 +3,15 @@ count([],Char, 0).
 count([H|Tail], Char, N) :-
     H == Char,
     N1 is N + 1,
-    count(Tail, N1).
+    count(Tail, Char, N1).
 %%% stringunifier/2 stringunifier(String,List).
 %%% mi serve per dividere in una lista tutti gli argomenti della string json per esempio se c'è presente una stringa con degli spazi in mezzo unirà dal primo apice fino al secondo apice
 
-stringunifier("", [A | Other]).
+stringunifier("", [Element | OtherElements]).
 stringunifier("", []).
 
-unify([],List) :-
-    stringunifier("", List).
+unify([],[Element | OtherElements]) :-
+    stringunifier("", [Element | OtherElements]).
 
 unify([A | As], List) :-
     Char is [A],
@@ -20,9 +20,8 @@ unify([A | As], List) :-
             A == '\"',
             count(List, '\"', N),
             (N mod 2) =:= 0,
-            unify(As, Char),
-            string_chars(C, Char),
-            append(List, C, NextList)
+            unify(As, [A | Other]),
+            append(List, [A | Other], NextList)
         );
         append(List, Char, NextList)
     ),
@@ -34,8 +33,9 @@ unify([A | As], ['\"' | Other]) :-
         A == '\"',
         count(List, '\"', N),
         (N mod 2) @> 0,
-        append(['\"' | Other], ['\"'], NextList),
-        unify([], NextList)
+        append(['\"' | Other], Char, NextList),
+        string_chars(C, NextList),
+        unify([], C)
     );
     (
         append(List, Char, NextList),
@@ -86,11 +86,11 @@ jsonparse(JSONString, Object) :-
         (
             atom(JSONString),
             atom_string(JSONString, String),
-            stringanalizer(String,Xt)
+            stringunifier(String,Xt)
         );
         (
             string(JSONString),
-            stringanalizer(JsonString,Xt)
+            stringunifier(JsonString,Xt)
         )
     ),
     jsonparse(Xt, Object).
