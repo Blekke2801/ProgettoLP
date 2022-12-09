@@ -1,41 +1,47 @@
 %%% conta l'occorrenza di un elemento in una lista
+
 count([],Char, 0).
+
 count([H|Tail], Char, N) :-
-    H == Char,
-    N1 is N + 1,
-    count(Tail, Char, N1).
+    char_code(H, Code),
+    char_code(Char, Code),    
+    count(Tail, Char, N1),
+    N is N1 + 1.
+
+count([H|Tail], Char, N) :-
+    char_code(H, Code),
+    \+char_code(Char, Code),
+    count(Tail, Char, N).
+
 %%% unify/2 unify(String,List).
 %%% mi serve per dividere in una lista tutti gli argomenti della string json per esempio se c'è presente una stringa con degli spazi in mezzo unirà dal primo apice fino al secondo apice
 
 
 unify([],List).
+unifyquotes([],C).
 
 unify([A | As], List) :-
-    (
-        (
-            A == '\"',
-            count(List, '\"', N),
-            (N mod 2) =:= 0,
-            unify(As, [A | Other]),
-            append(List, [A | Other], NextList)
-        );
-        append(List, [A], NextList)
-    ),
+    A == '\"',
+    count(List, '\"', N),
+    (N mod 2) =:= 0,
+    unifyquotes(As, NewString),
+    append(List, [NewString], NextList),
     unify(As, NextList).
 
-unify([A | As], ['\"' | Other]) :-
-    (
-        A == '\"',
-        count(List, '\"', N),
-        (N mod 2) @> 0,
-        append(['\"' | Other], [A], NextList),
-        string_chars(C, NextList),
-        unify([], [C])
-    );
-    (
-        append(List, Char, NextList),
-        unify(As, NextList)
-    ).
+unifyquotes([A | As], NewString) :-
+    A == '\"',
+    append(NewString, [A], NextList),
+    append(['\"'], [NextList], LastList),
+    string_chars(C, LastList),
+    unifyquotes([], C).
+
+unifyquotes([A | As], List) :-
+    append(List, [A], NextList),
+    unifyquotes(As, NextList).
+
+unify([A | As], List) :-
+    append(List, [A], NextList),
+    unify(As, NextList).
 
 
 %%% jsonparse/2 jsonparse(JSONString, Object).
