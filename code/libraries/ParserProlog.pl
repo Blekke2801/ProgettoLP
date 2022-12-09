@@ -4,17 +4,13 @@ count([H|Tail], Char, N) :-
     H == Char,
     N1 is N + 1,
     count(Tail, Char, N1).
-%%% stringunifier/2 stringunifier(String,List).
+%%% unify/2 unify(String,List).
 %%% mi serve per dividere in una lista tutti gli argomenti della string json per esempio se c'è presente una stringa con degli spazi in mezzo unirà dal primo apice fino al secondo apice
 
-stringunifier("", [Element | OtherElements]).
-stringunifier("", []).
 
-unify([],[Element | OtherElements]) :-
-    stringunifier("", [Element | OtherElements]).
+unify([],List).
 
 unify([A | As], List) :-
-    Char is [A],
     (
         (
             A == '\"',
@@ -23,29 +19,24 @@ unify([A | As], List) :-
             unify(As, [A | Other]),
             append(List, [A | Other], NextList)
         );
-        append(List, Char, NextList)
+        append(List, [A], NextList)
     ),
     unify(As, NextList).
 
 unify([A | As], ['\"' | Other]) :-
-    Char is [A],
     (
         A == '\"',
         count(List, '\"', N),
         (N mod 2) @> 0,
-        append(['\"' | Other], Char, NextList),
+        append(['\"' | Other], [A], NextList),
         string_chars(C, NextList),
-        unify([], C)
+        unify([], [C])
     );
     (
         append(List, Char, NextList),
         unify(As, NextList)
     ).
-    
 
-stringunifier(String, List) :-
-    string_chars(String, Chars),
-    unify(Chars,List).
 
 %%% jsonparse/2 jsonparse(JSONString, Object).
 %%% prima funzione, vera quando la stringa può essere scomposta in stringhe numeri o termini composti
@@ -86,13 +77,14 @@ jsonparse(JSONString, Object) :-
         (
             atom(JSONString),
             atom_string(JSONString, String),
-            stringunifier(String,Xt)
+            string_chars(String, Chars)
         );
         (
             string(JSONString),
-            stringunifier(JsonString,Xt)
+            string_chars(JSONString, Chars)
         )
     ),
+    unify(Chars,Xt),
     jsonparse(Xt, Object).
 
 %%% controllo delle parentesi all'inizio e alla fine
