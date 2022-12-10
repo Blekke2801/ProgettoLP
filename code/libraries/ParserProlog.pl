@@ -1,6 +1,6 @@
 %%% conta l'occorrenza di un elemento in una lista
 
-count([],Char, 0).
+count([],_, 0).
 
 count([H|Tail], Char, N) :-
     char_code(H, Code),
@@ -17,31 +17,32 @@ count([H|Tail], Char, N) :-
 %%% mi serve per dividere in una lista tutti gli argomenti della string json per esempio se c'è presente una stringa con degli spazi in mezzo unirà dal primo apice fino al secondo apice
 
 
-unify([],List).
-unifyquotes([],C).
+unify([], []).
+unifyquotes([], _, []).
 
-unify([A | As], List) :-
+unify([A | As], [A | List]) :-
     A == '\"',
+    !,
     count(List, '\"', N),
     (N mod 2) =:= 0,
-    unifyquotes(As, NewString),
-    append(List, [NewString], NextList),
-    unify(As, NextList).
+    unifyquotes(As, List, [A]).
 
-unifyquotes([A | As], NewString) :-
-    A == '\"',
-    append(NewString, [A], NextList),
-    append(['\"'], [NextList], LastList),
-    string_chars(C, LastList),
-    unifyquotes([], C).
+unify([A | As], [A | List]) :-
+    unify(As, List).
 
-unifyquotes([A | As], List) :-
-    append(List, [A], NextList),
-    unifyquotes(As, NextList).
+unifyquotes([A | As], OutList, NewString) :-
+    A = '\"',
+    !,
+    append(List0, [A], List1),
+    string_chars(C, List1),
+    append(OutList, C, L),
+    unify(As, L).
+    
+unifyquotes([A | As], OutList, [A | NewString]) :-
+    unifyquotes(As, OutList, NewString).
 
-unify([A | As], List) :-
-    append(List, [A], NextList),
-    unify(As, NextList).
+
+
 
 
 %%% jsonparse/2 jsonparse(JSONString, Object).
@@ -125,9 +126,9 @@ jsonparse([], Object) :-
     jsonparse([], []).
 
 jsonparse(jsonobj(Members),Object) :- 
-    jsonparse([[Attribute, ':', Value] | MoreMembers], Object).
+    jsonparse([Attribute, ':', Value | MoreMembers], Object).
 
-jsonparse([[Attribute, ':', Value] | MoreMembers], Object) :-
+jsonparse([Attribute, ':', Value | MoreMembers], Object) :-
     string(Attribute),
     (
         string(Value); 
@@ -163,7 +164,7 @@ jsonparse(jsonarray(Elements),Object) :-
 jsonparse([Value | MoreValues], Object) :-
     (
         string(Value); 
-        Value is Object; 
+        jsonobj(Value); 
         number(Value)
     ),
     append(Object, [Value], NewObject),
@@ -173,7 +174,6 @@ jsonparse(MoreValues, NewObject) :-
     jsonarray(MoreValues),
     jsonparse(jsonarray(MoreValues), NewObject).
 
-jsonparse([], NewObject).
 jsonparse([], []).
 
 
