@@ -20,12 +20,13 @@ count([H|Tail], Char, N) :-
 unify([], []).
 unifyquotes([], _, []).
 
+
 unify([A | As], [A | List]) :-
     A == '\"',
     !,
     count(List, '\"', N),
     (N mod 2) =:= 0,
-    unifyquotes(As, List, [A]).
+    unifyquotes(As, [A | List], [A]).
 
 unify([A | As], [A | List]) :-
     unify(As, List).
@@ -33,9 +34,10 @@ unify([A | As], [A | List]) :-
 unifyquotes([A | As], OutList, NewString) :-
     A = '\"',
     !,
-    append(List0, [A], List1),
+    append(NewString, [A], List1),
     string_chars(C, List1),
     append(OutList, C, L),
+    unifyquotes([], _, []),
     unify(As, L).
     
 unifyquotes([A | As], OutList, [A | NewString]) :-
