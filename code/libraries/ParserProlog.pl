@@ -15,19 +15,15 @@ unify([A | As], [A | List]) :-
 
 unifyquotes([A | As], OutList, Ns) :-
     A = '\"',
+    unifyquotes([], OutList, []),
     append(Ns, [A], List0),
     append([A], List0, List1),
     string_chars(C, List1),
-    append(OutList, [C], L),
-    unifyquotes([], _, []),
-    unify(As, L).
+    append([C], As, L),
+    unify(L, OutList).
     
 unifyquotes([A | As], OutList, [A | Ns]) :-
     unifyquotes(As, OutList, Ns).
-
-
-
-
 
 %%% jsonparse/2 jsonparse(JSONString, Object).
 %%% prima funzione, vera quando la stringa può essere scomposta in stringhe numeri o termini composti
