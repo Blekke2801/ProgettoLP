@@ -1,165 +1,166 @@
 %%% unify/2 unify(String,List).
 %%% mi serve per dividere in una lista tutti gli argomenti della string json per esempio se c'è presente una stringa con degli spazi in mezzo unirà dal primo apice fino al secondo apice
+trim(L,N,S) :-    
+    length(P,N),   
+    append(P,S,L).
 
 
 unify([], []).
-unifyquotes([], _, []).
+unifyquotes([], []).
 
-
-unify([A | As], [A | List]) :-
+unify([A | As], List) :-
     A == '\"',
-    unifyquotes(As, [A | List], Ns).
+    !,
+    unifyquotes(As, Ns),
+    append([A], Ns, NewNs),
+    length(NewNs, Int),
+    trim([A | As], Int, NewAs),
+    string_chars(String, NewNs),
+    append([String], NewAs, L),
+    unify(L, List).
+
 
 unify([A | As], [A | List]) :-
     unify(As, List).
 
-unifyquotes([A | As], OutList, Ns) :-
-    A = '\"',
-    unifyquotes([], OutList, []),
-    append(Ns, [A], List0),
-    append([A], List0, List1),
-    string_chars(C, List1),
-    append([C], As, L),
-    unify(L, OutList).
+unifyquotes([A | As], [A | Ns]) :-
+    A == '\"',
+    !,
+    unifyquotes([], []).
     
-unifyquotes([A | As], OutList, [A | Ns]) :-
-    unifyquotes(As, OutList, Ns).
+unifyquotes([A | As], [A | Ns]) :-
+    unifyquotes(As,  Ns).
 
 %%% jsonparse/2 jsonparse(JSONString, Object).
 %%% prima funzione, vera quando la stringa può essere scomposta in stringhe numeri o termini composti
+%%% per distinguere array da oggetto mantenere le parentesi anche in object, forse, non lo so in realtà
 
 %%% riconoscimento di jsonobj
 jsonobj(Members) :- 
-    length(Members,0);
+    length(Members, 0).
+
+jsonobj([A | Members]) :-
+    A is [Attribute, ":", Value],
+    string(Attribute),
     (
-        string(Attribute), 
-        (
-            string(Value); 
-            number(Value); 
-            jsonobj(Value)
-        ),
-        Pair is [Attribute, ':', Value], 
-        Members is [Pair, ','| MoreMembers],
-        jsonobj(MoreMembers)
-    ).
-
-%%%riconoscimento di jsonarray
-jsonarray(Elements) :-
-    length(Elements, 0); 
-    (
-        (
-            string(Value); 
-            jsonobj(Value); 
-            number(Value) 
-        ),
-        Elements is [Value | MoreValues],
-        jsonarray(MoreValues)
-    ).
-
-
-jsonparse("", []).
-
-jsonparse(JSONString, Object) :- 
-    (
-        (
-            atom(JSONString),
-            atom_string(JSONString, String),
-            string_chars(String, Chars)
-        );
-        (
-            string(JSONString),
-            string_chars(JSONString, Chars)
-        )
+        number(Value);
+        string(Value)
     ),
-    unify(Chars,Xt),
+    !,
+    jsonobj(Members).
+
+jsonobj([A | Members]) :-
+    Value is ["{", TrueValue, "}"],
+    jsonobj(TrueValue),
+    jsonobj(Members).    
+    
+
+%%% riconoscimento di jsonarray
+jsonarray(Elements) :- 
+    length(Elements, 0).
+
+jsonarray([A, B| Elements]) :-
+    A is [Value],
+    B is ",",
+    (
+        number(Value);
+        string(Value)
+    ),
+    !,
+    jsonobj(Members).
+
+jsonarray([A | Members]) :-
+    Value is ["{", TrueValue, "}"],
+    jsonobj(TrueValue),
+    jsonarray(Members).
+
+%%% inizio scrittura di jsonparse
+jsonparse("", []).
+jsonparse([],[]).
+
+jsonparse(JSONString, Object) :-
+    atom(JSONString),
+    atom_string(JSONString, String),
+    !,
+    string_chars(String, Chars),
+    unify(Chars, Xt),
     jsonparse(Xt, Object).
 
-%%% controllo delle parentesi all'inizio e alla fine
-jsonparse(Xt, Object) :-  
-    (
-        nth0(0,Xt,'{'), 
-        last(Xt, '}'), 
-        Xt is [A | Other],
-        jsonparse([A | Other], Object)
-    );
-    (
-        nth0(0,Xt,'['), 
-        last(Xt, ']'), 
-        Xt is [B | Other],
-        jsonparse([B | Other], Object)
-    ).
+jsonparse(JSONString, Object) :-
+    string(JSONString),
+    string_chars(JSONString, Chars),
+    unify(Chars,Xt),
+    delete(Xt, "\s", Xd),
+    delete(Xd, "\n", Xs),
+    jsonparse(Xs, Object).
 
-jsonparse([A | Other], Object) :- 
-    (
-        jsonobj([A | Other]);
-        (
-            selectchk([A | Other], A, New),
-            reverse(New, R_new), 
-            selectchk(R_new, '}',  New2), 
-            reverse(New2, Members), 
-            jsonobj(Members)
-        )
-    ),
-    jsonparse(jsonobj(Members), Object). 
+%%% controllo delle parentesi all'inizio e alla fine
+
+jsonparse([A | Xs], Object) :-  
+    A == '{',
+    last(Xs, '}'),
+    jsonparse(['{' | Xs], Object).
+
+jsonparse([A | Xs], Object) :-  
+    A == '[',
+    last(Xs, ']'),
+    jsonparse(['[' | Xs], Object).
 
 jsonparse([], Object) :- 
     jsonparse([], []).
 
-jsonparse(jsonobj(Members),Object) :- 
-    jsonparse([Attribute, ':', Value | MoreMembers], Object).
+jsonparse([A | Other], Object) :-
+    jsonobj(Members),
+    !,
+    jsonparse([A | Members], [A | Object]).
 
-jsonparse([Attribute, ':', Value | MoreMembers], Object) :-
+jsonparse(['{' | Other], Object) :-
+    selectchk([A | Other], A, New),
+    reverse(New, R_new), 
+    selectchk(R_new, '}',  New2), 
+    reverse(New2, Members),
+    jsonobj(Members),
+    jsonparse([A | Members], [A | Object]).
+
+jsonparse([Attribute, ':', Value , D | MoreMembers], [[A, B, C] | Object]) :-
     string(Attribute),
     (
-        string(Value); 
-        jsonobj(Value); 
+        string(Value);
         number(Value)
     ),
-    append(Object, [[Attribute, ':', Value]], NewObject),
+    !,
     jsonparse(MoreMembers, NewObject).
 
-jsonparse(MoreMembers, NewObject) :-
-    jsonobj(MoreMembers),
-    jsonparse(jsonobj(MoreMembers), NewObject).
+jsonparse([Attribute, ':', Value , D | MoreMembers], [[A, B, C] | Object]) :-
+    Value is ['{', TrueValue, '}'],
+    jsonobj(TrueValue),
+    jsonparse(MoreMembers, NewObject).
 
-jsonparse([B | Other], Object) :- 
-    (
-        (   
-            jsonarray([B | Other]),
-            Elements is [B | Other] 
-        );
-        (
-            selectchk([B | Other], B, New),
-            reverse(New, R_new), 
-            selectchk(R_new, ']',  New2), 
-            reverse(New2, Elements), 
-            jsonarray(Elements)
-        )
-    ),
-    jsonparse(jsonarray(Elements), Object).
-    
-jsonparse(jsonarray(Elements),Object) :- 
-    jsonparse([Value | MoreValues], Object).
+jsonparse([B | Other], Object) :-
+    jsonarray(Members),
+    !,
+    jsonparse([B | Members], [B | Object]).
 
-jsonparse([Value | MoreValues], Object) :-
+jsonparse(['[' | Other], Object) :-
+    selectchk([A | Other], A, New),
+    reverse(New, R_new), 
+    selectchk(R_new, ']',  New2), 
+    reverse(New2, Members),
+    jsonobj(Members),
+    jsonparse([B | Members], [A | Objects]).
+
+jsonparse([Value, Virgola | MoreValues], [Value | Objects]) :-
     (
-        string(Value); 
-        jsonobj(Value); 
+        string(Value);
         number(Value)
     ),
-    append(Object, [Value], NewObject),
-    jsonparse(MoreValues, NewObject).
+    !,
+    jsonparse(MoreValues, Objects).
 
-jsonparse(MoreValues, NewObject) :-
-    jsonarray(MoreValues),
-    jsonparse(jsonarray(MoreValues), NewObject).
-
-jsonparse([], []).
-
-
-
-
-
+jsonparse([Value, Virgola | MoreValues], [Value | Objects]) :-
+    Value is ['{', TrueValue, '}'],
+    jsonobj(TrueValue),
+    jsonparse(MoreValues, Objects).
 
 %%% jsonaccess/3 jsonaccess(Jsonobj, Fields, Result).
 %%% vero quando Result è recuperabile seguendo la catena di campi presenti in Fields
