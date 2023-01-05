@@ -39,22 +39,21 @@ unifyquotes([A | As], [A | Ns]) :-
 jsonobj(Members) :- 
     length(Members, 0).
 
-jsonobj([A | Members]) :-
-    A is [Attribute, ":", Value],
+jsonobj([Attribute, ':', Value, D | Members]) :-
     string(Attribute),
+    D == ',',
+    !,
     (
         number(Value);
         string(Value)
     ),
-    !,
     jsonobj(Members).
 
-jsonobj([A | Members]) :-
-    Value is ["{", TrueValue, "}"],
+jsonobj([Attribute, ':', Value, D | Members]) :-
+    Value == ['{', TrueValue, '}'],
     jsonobj(TrueValue),
     jsonobj(Members).    
     
-
 %%% riconoscimento di jsonarray
 jsonarray(Elements) :- 
     length(Elements, 0).
