@@ -4,7 +4,7 @@ trim(L,N,S) :-
     length(P,N),   
     append(P,S,L).
 
-subobject(List,0,Object).
+subobject([],0,Object).
 subobject([],N,[]).
 
 subobject([A | List], N, [A | Object]) :-
@@ -18,6 +18,13 @@ subobject([A | List], N, [A | Object]) :-
     !,
     N1 is N - 1,
     subobject(List, N1, Object).
+
+subobject([A | List], N, [A | Object]) :-
+    N is 0,
+    \+(A is '{'),
+    \+(A is '}'),  
+    !,
+    subobject([], 0, [A | Object]).
 
 subobject([A | List], N, [A | Object]) :-
     subobject(List, N, Object).
@@ -57,39 +64,63 @@ unifyquotes([A | As], [A | Ns]) :-
 jsonobj(Members) :- 
     length(Members, 0).
 
+jsonobj(['{' | Other]) :-
+    jsonobj(Other).
+
+jsonobj(['}']) :-
+    jsonobj([]).
+
 jsonobj([Attribute, ':', Value, D | Members]) :-
     string(Attribute),
     D == ',',
     !,
     (
         number(Value);
-        string(Value)
+        string(Value);
+        jsonobj(Value)
     ),
     jsonobj(Members).
 
 jsonobj([Attribute, ':', Value, D | Members]) :-
     Value == '{',
+    subobject([Value, D | Members],0,TrueValue),
     jsonobj(TrueValue),
-    jsonobj(Members).    
+    length(TrueValue, N),
+    trim([Value, D | Members], N, NextMembers),
+    append([Attribute, ':'], [TrueValue], Comp),
+    append(Comp, NextMembers, VeryNextMembers),
+    jsonobj(VeryNextMembers).    
     
 %%% riconoscimento di jsonarray
 jsonarray(Elements) :- 
     length(Elements, 0).
 
 jsonarray([A, B| Elements]) :-
-    A is [Value],
-    B is ",",
+    B == ',',
     (
-        number(Value);
-        string(Value)
+        number(A);
+        string(A)
     ),
     !,
-    jsonobj(Members).
+    jsonarray(Elements).
 
-jsonarray([A | Members]) :-
-    Value is ["{", TrueValue, "}"],
+jsonarray([A, B| Elements]) :-
+    B == ',',
+    (
+        number(A);
+        string(A)
+    ),
+    !,
+    jsonarray(Elements).
+
+jsonarray([A | Elements]) :-
+    A == '{',
+    subobject([A | Elements],0,TrueValue),
     jsonobj(TrueValue),
-    jsonarray(Members).
+    length(TrueValue, N),
+    trim([A | Elements], N, NextElements),
+    append(TrueValue, NextElements, VeryNextElements),
+    jsonarray(VeryNextElements).
 
 %%% inizio scrittura di jsonparse
 jsonparse("", []).
@@ -114,12 +145,8 @@ jsonparse(JSONString, Object) :-
 jsonparse([], Object) :- 
     jsonparse([], []).
 
-jsonparse(['{' | Members], Object) :-
-    jsonobj(Members),
-    !,
-    jsonparse([A | Members], Object).
-
 jsonparse(['{', Attribute, ':', Value , D | MoreMembers], [[Attribute, Value] | Object]) :-
+    jsonobj([Attribute, ':', Value , D | MoreMembers]),
     string(Attribute),
     (
         string(Value);
@@ -130,17 +157,20 @@ jsonparse(['{', Attribute, ':', Value , D | MoreMembers], [[Attribute, Value] | 
 
 %%% usare subobj per sostituire value e renderlo una sotto lista jsonobj
 jsonparse(['{', Attribute, ':', Value , D | MoreMembers], [[A, B, C] | Object]) :-
+    jsonobj([Attribute, ':', Value , D | MoreMembers]),
     string(Attribute),
-    Value is ['{', TrueValue, '}'], %%% da modificare
+    Value == '{',
+    !,
+    subobject([Value, D | Members],0,TrueValue),
     jsonobj(TrueValue),
+    length(TrueValue, N),
+    N1 is N + 3,
+    trim([Attribute, ':', Value, D | Members], N1, NextMembers), %%% da modificare
     jsonparse(MoreMembers, NewObject).
 
-jsonparse([B | Other], Object) :-
-    jsonarray(Members),
-    !,
-    jsonparse([B | Members], [B | Object]).
-
 jsonparse(['[', Value, Virgola | MoreValues], [Value | Objects]) :-
+    jsonarray([Value, Virgola | MoreValues]),
+    Virgola == ',',
     (
         string(Value);
         number(Value)
