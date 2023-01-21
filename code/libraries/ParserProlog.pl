@@ -4,6 +4,24 @@ trim(L,N,S) :-
     length(P,N),   
     append(P,S,L).
 
+subobject(List,0,Object).
+subobject([],N,[]).
+
+subobject([A | List], N, [A | Object]) :-
+    A is '{',
+    !,
+    N1 is N + 1,
+    subobject(List, N1, Object).
+
+subobject([A | List], N, [A | Object]) :-
+    A is '}',
+    !,
+    N1 is N - 1,
+    subobject(List, N1, Object).
+
+subobject([A | List], N, [A | Object]) :-
+    subobject(List, N, Object).
+
 
 unify([], []).
 unifyquotes([], []).
@@ -50,7 +68,7 @@ jsonobj([Attribute, ':', Value, D | Members]) :-
     jsonobj(Members).
 
 jsonobj([Attribute, ':', Value, D | Members]) :-
-    Value == ['{', TrueValue, '}'],
+    Value == '{',
     jsonobj(TrueValue),
     jsonobj(Members).    
     
@@ -93,35 +111,15 @@ jsonparse(JSONString, Object) :-
     delete(Xd, "\n", Xs),
     jsonparse(Xs, Object).
 
-%%% controllo delle parentesi all'inizio e alla fine
-
-jsonparse([A | Xs], Object) :-  
-    A == '{',
-    last(Xs, '}'),
-    jsonparse(['{' | Xs], Object).
-
-jsonparse([A | Xs], Object) :-  
-    A == '[',
-    last(Xs, ']'),
-    jsonparse(['[' | Xs], Object).
-
 jsonparse([], Object) :- 
     jsonparse([], []).
 
-jsonparse([A | Other], Object) :-
+jsonparse(['{' | Members], Object) :-
     jsonobj(Members),
     !,
-    jsonparse([A | Members], [A | Object]).
+    jsonparse([A | Members], Object).
 
-jsonparse(['{' | Other], Object) :-
-    selectchk([A | Other], A, New),
-    reverse(New, R_new), 
-    selectchk(R_new, '}',  New2), 
-    reverse(New2, Members),
-    jsonobj(Members),
-    jsonparse([A | Members], [A | Object]).
-
-jsonparse([Attribute, ':', Value , D | MoreMembers], [[A, B, C] | Object]) :-
+jsonparse(['{', Attribute, ':', Value , D | MoreMembers], [[Attribute, Value] | Object]) :-
     string(Attribute),
     (
         string(Value);
@@ -130,8 +128,10 @@ jsonparse([Attribute, ':', Value , D | MoreMembers], [[A, B, C] | Object]) :-
     !,
     jsonparse(MoreMembers, NewObject).
 
-jsonparse([Attribute, ':', Value , D | MoreMembers], [[A, B, C] | Object]) :-
-    Value is ['{', TrueValue, '}'],
+%%% usare subobj per sostituire value e renderlo una sotto lista jsonobj
+jsonparse(['{', Attribute, ':', Value , D | MoreMembers], [[A, B, C] | Object]) :-
+    string(Attribute),
+    Value is ['{', TrueValue, '}'], %%% da modificare
     jsonobj(TrueValue),
     jsonparse(MoreMembers, NewObject).
 
@@ -140,15 +140,7 @@ jsonparse([B | Other], Object) :-
     !,
     jsonparse([B | Members], [B | Object]).
 
-jsonparse(['[' | Other], Object) :-
-    selectchk([A | Other], A, New),
-    reverse(New, R_new), 
-    selectchk(R_new, ']',  New2), 
-    reverse(New2, Members),
-    jsonobj(Members),
-    jsonparse([B | Members], [A | Objects]).
-
-jsonparse([Value, Virgola | MoreValues], [Value | Objects]) :-
+jsonparse(['[', Value, Virgola | MoreValues], [Value | Objects]) :-
     (
         string(Value);
         number(Value)
@@ -156,7 +148,7 @@ jsonparse([Value, Virgola | MoreValues], [Value | Objects]) :-
     !,
     jsonparse(MoreValues, Objects).
 
-jsonparse([Value, Virgola | MoreValues], [Value | Objects]) :-
+jsonparse(['[', Value, Virgola | MoreValues], [Value | Objects]) :-
     Value is ['{', TrueValue, '}'],
     jsonobj(TrueValue),
     jsonparse(MoreValues, Objects).
