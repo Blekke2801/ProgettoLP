@@ -97,10 +97,8 @@ jsonobj([Attr, ':', Value, D | Members]) :-
 jsonobj([Attr, ':', Value, D | Members]) :-
     Value == '{',
     D == '}',
-    trim([Attr, ':', Value, D | Members], 4, NextMembers),
-    append([Attr, ':'], ['{', '}'], Comp),
-    append(Comp, NextMembers, VeryNextMembers),
-    jsonobj(VeryNextMembers).
+    append([Attr, ':', '{', '}'], Members, NextMembers),
+    jsonobj(NextMembers).
 
 %%% riconoscimento di jsonarray
 jsonarray(Elements) :- 
@@ -129,9 +127,8 @@ jsonarray([A, B| Elements]) :-
     jsonarray([A, B| Elements]) :-
     A == '{',
     B == '}',
-    trim([A, B| Elements], 2, E),
-    append(['{','}'], E, VeryE),
-    jsonobj(VeryE).
+    append(['{','}'], Elements, E),
+    jsonobj(E).
 
 %%% inizio scrittura di jsonparse
 jsonparse("", []).
@@ -172,6 +169,7 @@ jsonparse(['{', Attr, ':', Value , D | Members], Object) :-
     jsonobj([Attr, ':', Value , D | Members]),
     string(Attr),
     Value == '{',
+    \+(D == '}'),
     !,
     subobject(Members,0,TrueValue),
     append([D],TrueValue, Comp1),
@@ -183,9 +181,18 @@ jsonparse(['{', Attr, ':', Value , D | Members], Object) :-
     append(Comp2, NextMembers, VeryNextMembers),
     jsonparse(VeryNextMembers, NewObject).
 
-jsonparse(['[', Value, Virgola | MoreValues], [Value | Objects]) :-
-    jsonarray([Value, Virgola | MoreValues]),
-    Virgola == ',',
+jsonparse(['{', Attr, ':', Value , D | Members], Object) :-
+    jsonobj([Attr, ':', Value , D | Members]),
+    string(Attr),
+    Value == '{',
+    D == '}',
+    !,
+    append([Attr, ':', ['{','}']], Members, NextMembers),
+    jsonparse(NextMembers, NewObject).
+
+jsonparse(['[', Value, D | MoreValues], [Value | Objects]) :-
+    jsonarray([Value, D | MoreValues]),
+    D == ',',
     (
         string(Value);
         number(Value);
@@ -194,17 +201,26 @@ jsonparse(['[', Value, Virgola | MoreValues], [Value | Objects]) :-
     !,
     jsonparse(MoreValues, Objects).
 
-jsonparse(['[', Value, Virgola | MoreValues], [Value | Objects]) :-
+jsonparse(['[', Value, D | MoreValues], Objects) :-
     Value == '{',
+    \+(D == '}'),
     !,
     subobject([Value, D | MoreValues],0,TrueValue),
     jsonobj(TrueValue),
     length(TrueValue, N),
     N1 is N + 1,
-    trim(['[', Value, Virgola | MoreValues], N1, NextValues),
+    trim(['[', Value, D | MoreValues], N1, NextValues),
     append(['['], [TrueValue], Comp),
     append(Comp, MoreValues, VeryMoreValues),
     jsonparse(MoreValues, Objects).
+
+jsonparse(['[', Value, D | MoreValues], Objects) :-
+    string(Attr),
+    Value == '{',
+    D == '}',
+    !,
+    append([Attr, ':', ['{','}']], MoreValues, VeryMoreValues),
+    jsonparse(VeryMoreValues, NewObject).
 
 %%% jsonaccess/3 jsonaccess(Jsonobj, Fields, Result).
 %%% vero quando Result è recuperabile seguendo la catena di campi presenti in Fields
