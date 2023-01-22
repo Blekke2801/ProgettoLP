@@ -70,8 +70,8 @@ jsonobj(['{' | Other]) :-
 jsonobj(['}']) :-
     jsonobj([]).
 
-jsonobj([Attribute, ':', Value, D | Members]) :-
-    string(Attribute),
+jsonobj([Attr, ':', Value, D | Members]) :-
+    string(Attr),
     D == ',',
     !,
     (
@@ -81,7 +81,7 @@ jsonobj([Attribute, ':', Value, D | Members]) :-
     ),
     jsonobj(Members).
 
-jsonobj([Attribute, ':', Value, D | Members]) :-
+jsonobj([Attr, ':', Value, D | Members]) :-
     Value == '{',
     \+(D == '}'),
     subobject(Members,0,TrueValue),
@@ -89,16 +89,16 @@ jsonobj([Attribute, ':', Value, D | Members]) :-
     jsonobj(Comp1),
     length(Comp1, N),
     N1 is N + 2,
-    trim([Attribute, ':', Value, D | Members], N1, NextMembers),
-    append([Attribute, ':'], [Comp1], Comp2),
+    trim([Attr, ':', Value, D | Members], N1, NextMembers),
+    append([Attr, ':'], [Comp1], Comp2),
     append(Comp2, NextMembers, VeryNextMembers),
     jsonobj(VeryNextMembers).    
     
-jsonobj([Attribute, ':', Value, D | Members]) :-
+jsonobj([Attr, ':', Value, D | Members]) :-
     Value == '{',
     D == '}',
-    trim([Attribute, ':', Value, D | Members], 4, NextMembers),
-    append([Attribute, ':'], ['{', '}'], Comp),
+    trim([Attr, ':', Value, D | Members], 4, NextMembers),
+    append([Attr, ':'], ['{', '}'], Comp),
     append(Comp, NextMembers, VeryNextMembers),
     jsonobj(VeryNextMembers).
 
@@ -156,9 +156,9 @@ jsonparse(JSONString, Object) :-
 jsonparse([], Object) :- 
     jsonparse([], []).
 
-jsonparse(['{', Attribute, ':', Value , D | MoreMembers], [[Attribute, Value] | Object]) :-
-    jsonobj([Attribute, ':', Value , D | MoreMembers]),
-    string(Attribute),
+jsonparse(['{', Attr, ':', Value , D | Members], [[Attr, Value] | Object]) :-
+    jsonobj([Attr, ':', Value , D | Members]),
+    string(Attr),
     D == ',',
     (
         string(Value);
@@ -166,20 +166,20 @@ jsonparse(['{', Attribute, ':', Value , D | MoreMembers], [[Attribute, Value] | 
         jsonobj(Value)
     ),
     !,
-    jsonparse(MoreMembers, NewObject).
+    jsonparse(Members, NewObject).
 
-jsonparse(['{', Attribute, ':', Value , D | MoreMembers], Object) :-
-    jsonobj([Attribute, ':', Value , D | MoreMembers]),
-    string(Attribute),
+jsonparse(['{', Attr, ':', Value , D | Members], Object) :-
+    jsonobj([Attr, ':', Value , D | Members]),
+    string(Attr),
     Value == '{',
     !,
-    subobject(MoreMembers,0,TrueValue),
+    subobject(Members,0,TrueValue),
     append([D],TrueValue, Comp1),
     jsonobj(Comp1),
     length(Comp1, N),
     N1 is N + 3,
-    trim(['{', Attribute, ':', Value, D | Members], N1, NextMembers),
-    append([Attribute, ':'], [Comp1], Comp2),
+    trim(['{', Attr, ':', Value, D | Members], N1, NextMembers),
+    append([Attr, ':'], [Comp1], Comp2),
     append(Comp2, NextMembers, VeryNextMembers),
     jsonparse(VeryNextMembers, NewObject).
 
@@ -220,13 +220,13 @@ jsonaccess(Jsonobj,Fields,Result) :-
     jsonaccess(Object, Fields,Result).
 
 jsonaccess(Object, [Field | MoreFields], Result) :-
-    Object is [Pair | MoreMembers],
-    Pair is [Attribute , ':' , Value],
-    jsonaccess([[Attribute , ':' , Value] | MoreMembers], [Field | MoreFields], Result).
+    Object is [Pair | Members],
+    Pair is [Attr , ':' , Value],
+    jsonaccess([[Attr , ':' , Value] | Members], [Field | MoreFields], Result).
 
-jsonaccess([[Attribute , ':' , Value] | MoreMembers], [Field | MoreFields], Result) :-
-    Attribute == Field,
-    jsonaccess([MoreMembers], [MoreFields], [[Field, ':', Value]]).
+jsonaccess([[Attr , ':' , Value] | Members], [Field | MoreFields], Result) :-
+    Attr == Field,
+    jsonaccess([Members], [MoreFields], [[Field, ':', Value]]).
 
 */
 
