@@ -61,8 +61,8 @@ unifyquotes([A | As], [A | Ns]) :-
 %%% per distinguere array da oggetto mantenere le parentesi anche in object, forse, non lo so in realtà
 
 %%% riconoscimento di jsonobj
-jsonobj(Members) :- 
-    length(Members, 0).
+jsonobj([]).
+jsonobj(['{','}']).
 
 jsonobj(['{' | Other]) :-
     jsonobj(Other).
@@ -101,8 +101,15 @@ jsonobj([Attr, ':', Value, D | Members]) :-
     jsonobj(NextMembers).
 
 %%% riconoscimento di jsonarray
-jsonarray(Elements) :- 
-    length(Elements, 0).
+
+jsonarray([]).
+jsonarray(['[',']']).
+
+jsonarray(['[' | Other]) :-
+    jsonarray(Other).
+
+jsonarray([']']) :-
+    jsonarray([]).
 
 jsonarray([A, B| Elements]) :-
     B == ',',
@@ -133,6 +140,8 @@ jsonarray([A, B| Elements]) :-
 %%% inizio scrittura di jsonparse
 jsonparse("", []).
 jsonparse([],[]).
+jsonparse(['{','}'],[]).
+jsonparse(['[',']'],[]).
 
 jsonparse(JSONString, Object) :-
     atom(JSONString),
@@ -150,11 +159,11 @@ jsonparse(JSONString, Object) :-
     delete(Xd, "\n", Xs),
     jsonparse(Xs, Object).
 
-jsonparse([], Object) :- 
+jsonparse(['{','}'], Object) :- 
     jsonparse([], []).
 
 jsonparse(['{', Attr, ':', Value , D | Members], [[Attr, Value] | Object]) :-
-    jsonobj([Attr, ':', Value , D | Members]),
+    jsonobj(['{', Attr, ':', Value , D | Members]),
     string(Attr),
     D == ',',
     (
@@ -164,6 +173,15 @@ jsonparse(['{', Attr, ':', Value , D | Members], [[Attr, Value] | Object]) :-
     ),
     !,
     jsonparse(Members, NewObject).
+
+jsonparse(['{', Attr, ':', Value , D | Members], Object) :-
+    jsonobj(['{', Attr, ':', Value , D | Members]),
+    string(Attr),
+    D == ',',
+    jsonobj(Value),
+    jsonparse(Value,ParsedValue),
+    append([[Attr, ParsedValue]], Object, NewObject),
+    jsonparse(MoreValues, NewObject).
 
 jsonparse(['{', Attr, ':', Value , D | Members], Object) :-
     jsonobj([Attr, ':', Value , D | Members]),
@@ -190,16 +208,26 @@ jsonparse(['{', Attr, ':', Value , D | Members], Object) :-
     append([Attr, ':', ['{','}']], Members, NextMembers),
     jsonparse(NextMembers, NewObject).
 
+jsonparse(['[',']'], Object) :- 
+    jsonparse([], []).
+
 jsonparse(['[', Value, D | MoreValues], [Value | Objects]) :-
     jsonarray([Value, D | MoreValues]),
     D == ',',
     (
         string(Value);
-        number(Value);
-        jsonobj(Value)
+        number(Value)
     ),
     !,
     jsonparse(MoreValues, Objects).
+
+jsonparse(['[', Value, D | MoreValues], Objects) :-
+    jsonarray([Value, D | MoreValues]),
+    D == ',',
+    jsonobj(Value),
+    jsonparse(Value,ParsedValue),
+    append(ParsedValue, Objects, NewObjects),
+    jsonparse(MoreValues, NewObjects).
 
 jsonparse(['[', Value, D | MoreValues], Objects) :-
     Value == '{',
