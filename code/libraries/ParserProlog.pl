@@ -79,8 +79,8 @@ jsonparse(JSONString, Object) :-
     string(JSONString),
     string_chars(JSONString, Chars),
     unify(Chars,Xt),
-    delete(Xt, "\s", Xd),
-    delete(Xd, "\n", Xs),
+    delete(Xt, '\s', Xd),
+    delete(Xd, '\n', Xs),
     jsonparse(Xs, Object).
 
 jsonparse(['{', Attr, ':', Value , D | Members], [[Attr, Value] | Object]) :-
@@ -91,19 +91,19 @@ jsonparse(['{', Attr, ':', Value , D | Members], [[Attr, Value] | Object]) :-
         string(Value);
         number(Value)
     ),
-    append(['{'], MoreValues, NextValues),
-    jsonparse(Members, NewObject).
+    append(['{'], Members, NextMembers),
+    jsonparse(NextMembers, NewObject).
 
 jsonparse(['{', Attr, ':', Value , D | Members], [[Attr, Value] | Object]) :-
     string(Attr),
-    D == ']',
-    length(['[', Value, D | MoreValues], Int),
+    D == '}',
+    length(['{', Attr, ':', Value , D | Members], Int),
     Int =:= 5,
     (
         number(Value);
         string(Value)
     ),
-    jsonparse(['{','}'], []).
+    jsonparse(['{','}'], Object).
 
 jsonparse(['{', Attr, ':', Value , D | Members], Object) :-
     string(Attr),
@@ -129,9 +129,6 @@ jsonparse(['{', Attr, ':', Value , D | Members], Object) :-
     append([Attr, ['{','}']], Object, NewObject),
     jsonparse(NextMembers, NewObject).
 
-jsonparse(['[',']'], Object) :- 
-    jsonparse([], []).
-
 jsonparse(['[', Value, D | MoreValues], [Value | Objects]) :-
     D == ',',
     !,
@@ -150,7 +147,7 @@ jsonparse(['[', Value, D | MoreValues], [Value | Objects]) :-
         number(Value);
         string(Value)
     ),
-    jsonparse(['[',']'], []).
+    jsonparse(['[',']'], Objects).
 
 jsonparse(['[', Value, D | MoreValues], Objects) :-
     Value == '{',
