@@ -1,9 +1,10 @@
-%%% unify/2 unify(String,List).
-%%% mi serve per dividere in una lista tutti gli argomenti della string json per esempio se c'è presente una stringa con degli spazi in mezzo unirà dal primo apice fino al secondo apice
+%%% trim elimina tot elementi allinizio di una lista utlizzando l'append
 trim(L,N,S) :-    
     length(P,N),   
     append(P,S,L).
 
+%%% subobject/3 subobject([A | List], N, [A | Object])
+%%% prendendo in input una lista con agli estremi delle parentesi graffe, crea una lista contenente un sotto-oggetto
 subobject([],0,Object).
 subobject([],N,[]).
 
@@ -29,7 +30,8 @@ subobject([A | List], N, [A | Object]) :-
 subobject([A | List], N, [A | Object]) :-
     subobject(List, N, Object).
 
-
+%%% unify/2 unify(CharList, UnifiedList)
+%%% prendendo una lista di caratteri come input, unisce tutti i caratteri tra doppi apici trasformandoli in una stringa unica, utilizzando unifyquotes
 unify([], []).
 unifyquotes([], []).
 
@@ -37,18 +39,17 @@ unify([A | As], List) :-
     A == '\"',
     !,
     unifyquotes(As, Ns),
-    append([A], Ns, NewNs),
-    length(NewNs, Int),
-    trim([A | As], Int, NewAs),
-    string_chars(String, NewNs),
+    length(Ns, Int),
+    Int1 is Int + 2,
+    trim([A | As], Int1, NewAs),
+    string_chars(String, Ns),
     append([String], NewAs, L),
     unify(L, List).
-
 
 unify([A | As], [A | List]) :-
     unify(As, List).
 
-unifyquotes([A | As], [A | Ns]) :-
+unifyquotes([A | As],Ns) :-
     A == '\"',
     !,
     unifyquotes([], []).
