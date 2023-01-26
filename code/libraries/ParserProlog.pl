@@ -9,13 +9,13 @@ subobject([],0,Object).
 subobject([],N,[]).
 
 subobject([A | List], N, [A | Object]) :-
-    A is '{',
+    A == '{',
     !,
     N1 is N + 1,
     subobject(List, N1, Object).
 
 subobject([A | List], N, [A | Object]) :-
-    A is '}',
+    A == '}',
     !,
     N1 is N - 1,
     subobject(List, N1, Object).
