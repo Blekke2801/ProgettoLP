@@ -34,6 +34,7 @@ subobject([A | List], N, [A | Object]) :-
 %%% prendendo una lista di caratteri come input, unisce tutti i caratteri tra doppi apici trasformandoli in una stringa unica, utilizzando unifyquotes
 unify([], []).
 unifyquotes([], []).
+unifynumbers([], []).
 
 unify([A | As], List) :-
     A == '\"',
@@ -46,6 +47,17 @@ unify([A | As], List) :-
     append([String], NewAs, L),
     unify(L, List).
 
+unify([A | As], List) :-
+    atom_number(A,X),
+    !,
+    unifynumbers([A | As], Ns),
+    length(Ns, Int),
+    trim([A | As], Int, NewAs),
+    atom_char(Atom, Ns),
+    atom_number(Atom,Number),
+    append([Number], NewAs, L),
+    unify(L, List).
+
 unify([A | As], [A | List]) :-
     unify(As, List).
 
@@ -56,6 +68,15 @@ unifyquotes([A | As],Ns) :-
     
 unifyquotes([A | As], [A | Ns]) :-
     unifyquotes(As,  Ns).
+
+unifynumbers([A | As], [A | Ns]) :-
+    atom_number(A,X),
+    unifynumbers(As,  Ns).
+
+unifynumbers([A | As],Ns) :-
+    \+(atom_number(A,X)),
+    !,
+    unifynumbers([], []).
 
 %%% jsonparse/2 jsonparse(JSONString, Object).
 %%% prima funzione, vera quando la stringa può essere scomposta in stringhe numeri o termini composti
@@ -73,12 +94,16 @@ jsonparse(JSONString, Object) :-
     !,
     string_chars(String, Chars),
     unify(Chars, Xt),
+    delete(Xt, '\t', Xd),
+    delete(Xt, '\s', Xd),
+    delete(Xd, '\n', Xs),
     jsonparse(Xt, Object).
 
 jsonparse(JSONString, Object) :-
     string(JSONString),
     string_chars(JSONString, Chars),
     unify(Chars,Xt),
+    delete(Xt, '\t', Xd),
     delete(Xt, '\s', Xd),
     delete(Xd, '\n', Xs),
     jsonparse(Xs, Object).
