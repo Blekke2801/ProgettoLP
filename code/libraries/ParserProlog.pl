@@ -1,3 +1,21 @@
+%%% verifica oggetto o array prolog
+jsonobj([[Attr, Value] | Members]) :-
+    string(Attr),
+    (
+        is_list(Value);
+        string(Value);
+        number(Value)
+    ),
+    jsonobj(Members).
+
+jsonarray([Value | Elements]) :-
+    (
+        is_list(Value);
+        string(Value);
+        number(Value)
+    ),
+    jsonarray(Elements).
+
 %%% trim elimina tot elementi allinizio di una lista utlizzando l'append
 trim(L,N,S) :-    
     length(P,N),   
@@ -202,24 +220,58 @@ jsonparse(['[', Value, D | MoreValues], Object) :-
 %%% (una lista) a partire da Jsonobj. Un campo rappresentato da N (con N un numero maggiore o
 %%% uguale a 0) corrisponde a un indice di un array JSON.
 
-/*
+jsonaccess("", [], []).
+jsonaccess([], [], []).
+
 jsonaccess("", [], Result) :- 
     jsonaccess("", [], []).
 
-jsonaccess(Jsonobj,Fields,Result) :- 
-    jsonparse(Jsonobj, Object),
-    jsonaccess(Object, Fields,Result).
+jsonaccess(List, [], Result) :-
+    !.
 
-jsonaccess(Object, [Field | MoreFields], Result) :-
-    Object is [Pair | Members],
-    Pair is [Attr , ':' , Value],
-    jsonaccess([[Attr , ':' , Value] | Members], [Field | MoreFields], Result).
+jsonaccess(JSONString, Fields, Result) :-
+    (
+        is_list(Fields);
+        string(Fields)
+    ),
+    jsonparse(JSONString, Object),
+    jsonaccess(Object, Fields, Result).
 
-jsonaccess([[Attr , ':' , Value] | Members], [Field | MoreFields], Result) :-
-    Attr == Field,
-    jsonaccess([Members], [MoreFields], [[Field, ':', Value]]).
+jsonaccess([[Attr, Value] | Members], Attr, [Value | Result]) :-
+    string(Attr),
+    !.
 
-*/
+jsonaccess([[Attr, Value] | Members], OtherAttr, [Value | Result]) :-
+    string(OtherAttr),
+    jsonaccess(Members, OtherAttr,  Result).
 
+jsonaccess([[Attr, Value] | Members], [Attr | Fields], [Value | Result]) :-
+    string(Attr),
+    jsonaccess(Members, Fields, Result).
 
+jsonaccess([[Attr, Value] | Members], [OtherAttr | Fields], Result) :-
+    string(OtherAttr),
+    jsonaccess(Members, [OtherAttr | Fields], Result).
+    
+
+%%% jsonread/2 jsonread(FileName, JSON).
+%%% legge da un file una stringa json
+
+jsonread("",[]).
+
+jsonread(FileName, JSON) :-
+    read_file_to_string(FileName, String, []),
+    jsonparse(String, JSON).
+
+%%% jsondump/2 jsondump(JSON, FileName).
+%%% scrive in un file una stringa json
+
+jsondump("", "").
+
+jsondump(JSON, FileName) :-
+    jsonparse(JSON, Obj),
+    open(FileName, write, Out, [create([write])]),
+    write(Out, JSON),
+    close(Out).
+    
 
