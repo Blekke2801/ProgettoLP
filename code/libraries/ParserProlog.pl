@@ -23,8 +23,8 @@ trim(L,N,S) :-
 
 %%% subobject/3 subobject([A | List], N, [A | Object])
 %%% prendendo in input una lista con agli estremi delle parentesi graffe, crea una lista contenente un sotto-oggetto
-subobject([],0,Object).
-subobject([],N,[]).
+subobject([],0,_).
+subobject([],_,[]).
 
 subobject([A | List], N, [A | Object]) :-
     A == '{',
@@ -38,7 +38,7 @@ subobject([A | List], N, [A | Object]) :-
     N1 is N - 1,
     subobject(List, N1, Object).
 
-subobject([A | List], N, [A | Object]) :-
+subobject([A | _], N, [A | Object]) :-
     N =:= 0,
     \+(A == '{'),
     \+(A == '}'),  
@@ -54,6 +54,7 @@ unify([], []).
 unifyquotes([], []).
 unifynumbers([], []).
 
+
 unify([A | As], List) :-
     A == '\"',
     !,
@@ -66,34 +67,33 @@ unify([A | As], List) :-
     unify(L, List).
 
 unify([A | As], List) :-
-    atom_number(A,X),
+    \+(number(A)),
+    atom_number(A,_),
     !,
     unifynumbers([A | As], Ns),
     length(Ns, Int),
     trim([A | As], Int, NewAs),
-    atom_char(Atom, Ns),
-    atom_number(Atom,Number),
+    number_chars(Number, Ns),
     append([Number], NewAs, L),
     unify(L, List).
 
 unify([A | As], [A | List]) :-
     unify(As, List).
 
-unifyquotes([A | As],Ns) :-
+unifyquotes([A | _],_) :-
     A == '\"',
     !,
     unifyquotes([], []).
-    
+
 unifyquotes([A | As], [A | Ns]) :-
-    unifyquotes(As,  Ns).
+    unifyquotes(As,  Ns).    
 
 unifynumbers([A | As], [A | Ns]) :-
-    atom_number(A,X),
+    atom_number(A,_),
+    !,
     unifynumbers(As,  Ns).
 
-unifynumbers([A | As],Ns) :-
-    \+(atom_number(A,X)),
-    !,
+unifynumbers(_, _) :-
     unifynumbers([], []).
 
 %%% jsonparse/2 jsonparse(JSONString, Object).
@@ -108,23 +108,21 @@ jsonparse(['[',']'],[]).
 
 jsonparse(JSONString, Object) :-
     atom(JSONString),
-    atom_string(JSONString, String),
-    !,
-    string_chars(String, Chars),
+    atom_chars(JSONString, Chars),
     unify(Chars, Xt),
     delete(Xt, '\t', Xd),
-    delete(Xt, '\s', Xd),
-    delete(Xd, '\n', Xs),
-    jsonparse(Xt, Object).
+    delete(Xd, '\s', Xe),
+    delete(Xe, '\n', Xf),
+    jsonparse(Xf, Object).
 
 jsonparse(JSONString, Object) :-
     string(JSONString),
     string_chars(JSONString, Chars),
     unify(Chars,Xt),
     delete(Xt, '\t', Xd),
-    delete(Xt, '\s', Xd),
-    delete(Xd, '\n', Xs),
-    jsonparse(Xs, Object).
+    delete(Xd, '\s', Xe),
+    delete(Xe, '\n', Xf),
+    jsonparse(Xf, Object).
 
 jsonparse(['{', Attr, ':', Value , D | Members], [[Attr, Value] | Object]) :-
     string(Attr),
@@ -135,7 +133,7 @@ jsonparse(['{', Attr, ':', Value , D | Members], [[Attr, Value] | Object]) :-
         number(Value)
     ),
     append(['{'], Members, NextMembers),
-    jsonparse(NextMembers, NewObject).
+    jsonparse(NextMembers, Object).
 
 jsonparse(['{', Attr, ':', Value , D | Members], [[Attr, Value] | Object]) :-
     string(Attr),
@@ -192,7 +190,7 @@ jsonparse(['[', Value, D | MoreValues], [Value | Objects]) :-
     ),
     jsonparse(['[',']'], Objects).
 
-jsonparse(['[', Value, D | MoreValues], Objects) :-
+jsonparse(['[', Value, D | MoreValues], Object) :-
     Value == '{',
     \+(D == '}'),
     !,
@@ -207,7 +205,6 @@ jsonparse(['[', Value, D | MoreValues], Objects) :-
     jsonparse(VeryNextValues, NewObject).
 
 jsonparse(['[', Value, D | MoreValues], Object) :-
-    string(Attr),
     Value == '{',
     D == '}',
     !,
@@ -223,36 +220,29 @@ jsonparse(['[', Value, D | MoreValues], Object) :-
 jsonaccess("", [], []).
 jsonaccess([], [], []).
 
-jsonaccess("", [], Result) :- 
+jsonaccess("", [], _) :- 
     jsonaccess("", [], []).
 
-jsonaccess(List, [], Result) :-
+jsonaccess(_, [], _) :-
     !.
 
 jsonaccess(JSONString, Fields, Result) :-
-    (
-        is_list(Fields);
-        string(Fields)
-    ),
+    string(JSONString),
     jsonparse(JSONString, Object),
     jsonaccess(Object, Fields, Result).
 
-jsonaccess([[Attr, Value] | Members], Attr, [Value | Result]) :-
-    string(Attr),
-    !.
+jsonaccess([[Attr, Value] | _], Attr, Value) :-
+    !,
+    string(Attr).
 
-jsonaccess([[Attr, Value] | Members], OtherAttr, [Value | Result]) :-
-    string(OtherAttr),
-    jsonaccess(Members, OtherAttr,  Result).
+jsonaccess([[_, _] | Members], Field, Result) :-
+    string(Field),
+    jsonaccess(Members, Field, Result).
 
 jsonaccess([[Attr, Value] | Members], [Attr | Fields], [Value | Result]) :-
+    !,
     string(Attr),
-    jsonaccess(Members, Fields, Result).
-
-jsonaccess([[Attr, Value] | Members], [OtherAttr | Fields], Result) :-
-    string(OtherAttr),
-    jsonaccess(Members, [OtherAttr | Fields], Result).
-    
+    jsonaccess(Members, Fields, Result).    
 
 %%% jsonread/2 jsonread(FileName, JSON).
 %%% legge da un file una stringa json
@@ -269,7 +259,7 @@ jsonread(FileName, JSON) :-
 jsondump("", "").
 
 jsondump(JSON, FileName) :-
-    jsonparse(JSON, Obj),
+    jsonparse(JSON, _),
     open(FileName, write, Out, [create([write])]),
     write(Out, JSON),
     close(Out).
