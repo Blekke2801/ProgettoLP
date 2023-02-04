@@ -23,7 +23,7 @@ trim(L,N,S) :-
 
 %%% subobject/3 subobject([A | List], N, [A | Object])
 %%% prendendo in input una lista con agli estremi delle parentesi graffe, crea una lista contenente un sotto-oggetto
-subobject([],0,_).
+subobject([],0,[]).
 subobject([],_,[]).
 
 subobject([A | List], N, [A | Object]) :-
@@ -38,12 +38,11 @@ subobject([A | List], N, [A | Object]) :-
     N1 is N - 1,
     subobject(List, N1, Object).
 
-subobject([A | _], N, [A | Object]) :-
-    N =:= 0,
+subobject([A | _], N, _) :-
+    N =< 0,
     \+(A == '{'),
     \+(A == '}'),  
-    !,
-    subobject([], 0, [A | Object]).
+    !.
 
 subobject([A | List], N, [A | Object]) :-
     subobject(List, N, Object).
@@ -130,21 +129,11 @@ jsonparse(['{', Attr, ':', Value , D | Members], [[Attr, Value] | Object]) :-
     !,
     (
         string(Value);
-        number(Value)
+        number(Value);
+        is_list(Value)
     ),
     append(['{'], Members, NextMembers),
     jsonparse(NextMembers, Object).
-
-jsonparse(['{', Attr, ':', Value , D | Members], [[Attr, Value] | Object]) :-
-    string(Attr),
-    D == '}',
-    length(['{', Attr, ':', Value , D | Members], Int),
-    Int =:= 5,
-    (
-        number(Value);
-        string(Value)
-    ),
-    jsonparse(['{','}'], Object).
 
 jsonparse(['{', Attr, ':', Value , D | Members], Object) :-
     string(Attr),
@@ -157,9 +146,20 @@ jsonparse(['{', Attr, ':', Value , D | Members], Object) :-
     length(Comp1, N),
     N1 is N + 3,
     trim(['{', Attr, ':', Value, D | Members], N1, NextMembers),
-    append(['{'], NextMembers, VeryNextMembers),
-    append([Attr, ParsedValue], Object, NewObject),
-    jsonparse(VeryNextMembers, NewObject).
+    append(['{', [Attr, ParsedValue]], NextMembers, VeryNextMembers),
+    jsonparse(VeryNextMembers, Object).
+
+jsonparse(['{', Attr, ':', Value , D | Members], [[Attr, Value] | Object]) :-
+    string(Attr),
+    D == '}',
+    length(['{', Attr, ':', Value , D | Members], Int),
+    Int =:= 5,
+    (
+        number(Value);
+        string(Value);
+        is_list(Value)
+    ),
+    jsonparse(['{','}'], Object).
 
 jsonparse(['{', Attr, ':', Value , D | Members], Object) :-
     string(Attr),
