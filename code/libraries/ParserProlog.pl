@@ -165,7 +165,7 @@ jsonparse(['{', Attr, ':', '{' , D | Members], [[Attr, ParsedValue] | Object]) :
     jsonparse(['{' | TrueValue], ParsedValue),
     jsonparse(['{' | NextMembers], Object).
 
-jsonparse(['{', Attr, ':', Value , '}'], [[Attr, Value] | Object]) :-
+jsonparse(['{', Attr, ':', Value , '}'], [[Attr, Value]]) :-
     string(Attr),
     (
         number(Value);
@@ -184,7 +184,7 @@ jsonparse(['[', Value, ',' | MoreValues], [Value | Objects]) :-
     ),
     jsonparse(['[' | MoreValues], Objects).
 
-jsonparse(['[', Value, ']'], [Value | Objects]) :-
+jsonparse(['[', Value, ']'], [Value]) :-
     (
         number(Value);
         string(Value)
