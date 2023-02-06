@@ -21,31 +21,55 @@ trim(L,N,S) :-
     length(P,N),   
     append(P,S,L).
 
-%%% subobject/3 subobject([A | List], N, [A | Object])
+%%% subobj/3 subobj([A | List], N, [A | Object])
 %%% prendendo in input una lista con agli estremi delle parentesi graffe, crea una lista contenente un sotto-oggetto
-subobject([],0,[]).
-subobject([],_,[]).
+subobj([],0,[]).
+subobj([],_,[]).
 
-subobject([A | List], N, [A | Object]) :-
-    A == '{',
-    !,
+subobj(['{' | List], N, ['{' | Object]) :-
     N1 is N + 1,
-    subobject(List, N1, Object).
-
-subobject([A | List], N, [A | Object]) :-
-    A == '}',
     !,
-    N1 is N - 1,
-    subobject(List, N1, Object).
+    subobj(List, N1, Object).
 
-subobject([A | _], N, _) :-
-    N =< 0,
+subobj(['}' | List], N, ['}' | Object]) :-
+    N1 is N - 1,
+    !,
+    subobj(List, N1, Object).
+
+subobj([A | List], N, [A | Object]) :-
+    N > 0,
+    !,
+    subobj(List, N, Object).
+
+subobj([A | _], 0, _) :-
     \+(A == '{'),
     \+(A == '}'),  
     !.
 
-subobject([A | List], N, [A | Object]) :-
-    subobject(List, N, Object).
+
+%%% subarray/3 subarray([A | List], N, [A | Object])
+%%% subarray in input una lista con agli estremi delle parentesi quadrate, crea una lista contenente un sotto-array
+
+subarray(['[' | List], N, ['[' | Object]) :-
+    N1 is N + 1,
+    !,
+    subarray(List, N1, Object).
+
+subarray([']' | List], N, [']' | Object]) :-
+    N1 is N - 1,
+    !,
+    subarray(List, N1, Object).
+
+subarray([A | List], N, [A | Object]) :-
+    N > 0,
+    !,
+    subarray(List, N, Object).
+
+subarray([A | _], 0, _) :-
+    \+(A == '['),
+    \+(A == ']'),  
+    !.
+
 
 %%% unify/2 unify(CharList, UnifiedList)
 %%% prendendo una lista di caratteri come input, unisce tutti i caratteri tra doppi apici trasformandoli in una stringa unica, utilizzando unifyquotes
@@ -54,13 +78,11 @@ unifyquotes([], []).
 unifynumbers([], []).
 
 
-unify([A | As], List) :-
-    A == '\"',
-    !,
+unify(['\"' | As], List) :-
     unifyquotes(As, Ns),
     length(Ns, Int),
     Int1 is Int + 2,
-    trim([A | As], Int1, NewAs),
+    trim(['\"' | As], Int1, NewAs),
     string_chars(String, Ns),
     append([String], NewAs, L),
     unify(L, List).
@@ -79,9 +101,7 @@ unify([A | As], List) :-
 unify([A | As], [A | List]) :-
     unify(As, List).
 
-unifyquotes([A | _],_) :-
-    A == '\"',
-    !,
+unifyquotes(['\"' | _],_) :-
     unifyquotes([], []).
 
 unifyquotes([A | As], [A | Ns]) :-
@@ -90,6 +110,9 @@ unifyquotes([A | As], [A | Ns]) :-
 unifynumbers([A | As], [A | Ns]) :-
     atom_number(A,_),
     !,
+    unifynumbers(As,  Ns).
+
+unifynumbers(['.' | As], ['.' | Ns]) :-
     unifynumbers(As,  Ns).
 
 unifynumbers(_, _) :-
@@ -123,56 +146,41 @@ jsonparse(JSONString, Object) :-
     delete(Xe, '\n', Xf),
     jsonparse(Xf, Object).
 
-jsonparse(['{', Attr, ':', Value , D | Members], [[Attr, Value] | Object]) :-
+jsonparse(['{', Attr, ':', Value , ',' | Members], [[Attr, Value] | Object]) :-
     string(Attr),
-    D == ',',
-    !,
     (
         string(Value);
-        number(Value);
-        is_list(Value)
+        number(Value)
     ),
     append(['{'], Members, NextMembers),
     jsonparse(NextMembers, Object).
 
-jsonparse(['{', Attr, ':', Value , D | Members], Object) :-
+jsonparse(['{', Attr, ':', '{' , D | Members], [[Attr, ParsedValue] | Object]) :-
     string(Attr),
-    Value == '{',
     \+(D == '}'),
     !,
-    subobject(Members, 0, TrueValue),
-    append([Value, D], TrueValue, Comp1),
-    jsonparse(Comp1, ParsedValue),
-    length(Comp1, N),
+    subobj([D | Members], 1, TrueValue),
+    jsonparse(['{' | TrueValue], ParsedValue),
+    length(TrueValue, N),
     N1 is N + 3,
-    trim(['{', Attr, ':', Value, D | Members], N1, NextMembers),
-    append(['{', [Attr, ParsedValue]], NextMembers, VeryNextMembers),
+    trim(['{', Attr, ':', '{' , D | Members], N1, NextMembers),
+    append(['{'], NextMembers, VeryNextMembers),
     jsonparse(VeryNextMembers, Object).
 
-jsonparse(['{', Attr, ':', Value , D | Members], [[Attr, Value] | Object]) :-
+jsonparse(['{', Attr, ':', Value , '}'], [[Attr, Value] | Object]) :-
     string(Attr),
-    D == '}',
-    length(['{', Attr, ':', Value , D | Members], Int),
-    Int =:= 5,
     (
         number(Value);
-        string(Value);
-        is_list(Value)
+        string(Value)
     ),
     jsonparse(['{','}'], Object).
 
-jsonparse(['{', Attr, ':', Value , D | Members], Object) :-
+jsonparse(['{', Attr, ':', '{' , '}' | Members], [[Attr, []] | Object]) :-
     string(Attr),
-    Value == '{',
-    D == '}',
-    !,
     append(['{'], Members, NextMembers),
-    append([Attr, ['{','}']], Object, NewObject),
-    jsonparse(NextMembers, NewObject).
+    jsonparse(NextMembers, Object).
 
-jsonparse(['[', Value, D | MoreValues], [Value | Objects]) :-
-    D == ',',
-    !,
+jsonparse(['[', Value, ',' | MoreValues], [Value | Objects]) :-
     (
         string(Value);
         number(Value)
@@ -180,37 +188,41 @@ jsonparse(['[', Value, D | MoreValues], [Value | Objects]) :-
     append(['['], MoreValues, NextValues),
     jsonparse(NextValues, Objects).
 
-jsonparse(['[', Value, D | MoreValues], [Value | Objects]) :-
-    D == ']',
-    length(['[', Value, D | MoreValues], Int),
-    Int =:= 3,
+jsonparse(['[', Value, ']'], [Value | Objects]) :-
     (
         number(Value);
         string(Value)
     ),
     jsonparse(['[',']'], Objects).
 
-jsonparse(['[', Value, D | MoreValues], Object) :-
-    Value == '{',
+jsonparse(['[', '{', D | MoreValues], [ParsedValue | Object]) :-
     \+(D == '}'),
     !,
-    subobject(MoreValues, 0, TrueValue),
-    append([Value, D], TrueValue, Comp1),
-    jsonparse(Comp1, ParsedValue),
-    length(Comp1, N),
+    subobj([D | MoreValues], 1, TrueValue),
+    jsonparse(['{' | TrueValue], ParsedValue),
+    length(TrueValue, N),
     N1 is N + 1,
-    trim(['[', Value, D | MoreValues], N1, NextValues),
+    trim(['[', '{', D | MoreValues], N1, NextValues),
     append(['['], NextValues, VeryNextValues),
-    append([ParsedValue], Object, NewObject),
-    jsonparse(VeryNextValues, NewObject).
+    jsonparse(VeryNextValues, Object).
 
-jsonparse(['[', Value, D | MoreValues], Object) :-
-    Value == '{',
-    D == '}',
-    !,
+jsonparse(['[', '{', '}' | MoreValues], [[] | Object]) :-
     append(['['], MoreValues, NextValues),
-    append(['{','}'], Object, NewObject),
-    jsonparse(NextValues, NewObject).
+    jsonparse(NextValues, Object).
+
+jsonparse(['[', '[', D | MoreValues], [ParsedValue | Object]) :-
+    \+(D == ']'),
+    !,
+    subobj([D | MoreValues], 1, TrueValue),
+    jsonparse(['[' | TrueValue], ParsedValue),
+    length(TrueValue, N),
+    N1 is N + 1,
+    trim(['[', '[', D | MoreValues], N1, NextValues),
+    append(['['], NextValues, VeryNextValues),
+    jsonparse(VeryNextValues, Object).
+
+jsonparse(['[', '[', ']' | MoreValues], [[] | Object]) :-
+    jsonparse(MoreValues, Object).
 
 %%% jsonaccess/3 jsonaccess(Jsonobj, Fields, Result).
 %%% vero quando Result è recuperabile seguendo la catena di campi presenti in Fields
@@ -227,12 +239,14 @@ jsonaccess(_, [], _) :-
     !.
 
 jsonaccess(JSONString, Fields, Result) :-
-    string(JSONString),
+    (
+        string(JSONString);
+        atom(JSONString)
+    ),
     jsonparse(JSONString, Object),
     jsonaccess(Object, Fields, Result).
 
 jsonaccess([[Attr, Value] | _], Attr, Value) :-
-    !,
     string(Attr).
 
 jsonaccess([[_, _] | Members], Field, Result) :-
@@ -240,9 +254,23 @@ jsonaccess([[_, _] | Members], Field, Result) :-
     jsonaccess(Members, Field, Result).
 
 jsonaccess([[Attr, Value] | Members], [Attr | Fields], [Value | Result]) :-
-    !,
     string(Attr),
     jsonaccess(Members, Fields, Result).    
+
+jsonaccess([Value | Elements], Index, Result) :-
+    integer(Index),
+    length([Value | Elements], Int),
+    Index < Int,
+    !,
+    nth0(Index,[Value | Elements], Result).
+
+jsonaccess([Value | Elements], [Index | Indexes], [Elem | Result]) :-
+    integer(Index),
+    length([Value | Elements], Int),
+    Index < Int,
+    !,
+    nth0(Index,[Value | Elements], Elem),
+    jsonaccess([Value | Elements], Indexes, Result).  
 
 %%% jsonread/2 jsonread(FileName, JSON).
 %%% legge da un file una stringa json
