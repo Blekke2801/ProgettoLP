@@ -140,10 +140,10 @@ jsonparse(['{', Attr, ':', '[', ']', '}'], [[Attr, [jsonarray]]]) :-
     string(Attr),
     !.
 
-jsonparse(['[''{', '}', ']'], [[jsonobj]]) :-
+jsonparse(['[', '{', '}', ']'], [[jsonobj]]) :-
     !.
 
-jsonparse(['[''[', ']', ']'], [[jsonarray]]) :-
+jsonparse(['[', '[', ']', ']'], [[jsonarray]]) :-
     !.
 
 jsonparse(['[', Value, ']'], [Value]) :-
