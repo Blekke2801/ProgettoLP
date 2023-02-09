@@ -31,6 +31,11 @@ subobj(['{' | List], N, ['{' | Object]) :-
     !,
     subobj(List, N1, Object).
 
+subobj(['}' | List], N, ['}']) :-
+    N1 is N - 1,
+    N1 =:= 0,
+    !.
+
 subobj(['}' | List], N, ['}' | Object]) :-
     N1 is N - 1,
     !,
@@ -41,12 +46,6 @@ subobj([A | List], N, [A | Object]) :-
     !,
     subobj(List, N, Object).
 
-subobj([A | _], 0, _) :-
-    \+(A == '{'),
-    \+(A == '}'),  
-    !.
-
-
 %%% subarray/3 subarray([A | List], N, [A | Object])
 %%% subarray in input una lista con agli estremi delle parentesi quadrate, crea una lista contenente un sotto-array
 
@@ -55,9 +54,13 @@ subarray(['[' | List], N, ['[' | Object]) :-
     !,
     subarray(List, N1, Object).
 
+subarray([']' | List], N, [']']) :-
+    N1 is N - 1,
+    N1 =:= 0,
+    !.
+
 subarray([']' | List], N, [']' | Object]) :-
     N1 is N - 1,
-    !,
     subarray(List, N1, Object).
 
 subarray([A | List], N, [A | Object]) :-
@@ -65,18 +68,11 @@ subarray([A | List], N, [A | Object]) :-
     !,
     subarray(List, N, Object).
 
-subarray([A | _], 0, _) :-
-    \+(A == '['),
-    \+(A == ']'),  
-    !.
-
-
 %%% unify/2 unify(CharList, UnifiedList)
 %%% prendendo una lista di caratteri come input, unisce tutti i caratteri tra doppi apici trasformandoli in una stringa unica, utilizzando unifyquotes
 unify([], []).
 unifyquotes([], []).
 unifynumbers([], []).
-
 
 unify(['\"' | As], List) :-
     unifyquotes(As, Ns),
@@ -101,8 +97,8 @@ unify([A | As], List) :-
 unify([A | As], [A | List]) :-
     unify(As, List).
 
-unifyquotes(['\"' | _],_) :-
-    unifyquotes([], []).
+unifyquotes(['\"' | _],[]) :-
+    !.
 
 unifyquotes([A | As], [A | Ns]) :-
     unifyquotes(As,  Ns).    
@@ -115,18 +111,18 @@ unifynumbers([A | As], [A | Ns]) :-
 unifynumbers(['.' | As], ['.' | Ns]) :-
     unifynumbers(As,  Ns).
 
-unifynumbers(_, _) :-
-    unifynumbers([], []).
+unifynumbers(_, []) :-
+    !.
 
 %%% jsonparse/2 jsonparse(JSONString, Object).
 %%% prima funzione, vera quando la stringa può essere scomposta in stringhe numeri o termini composti
 %%% per distinguere array da oggetto mantenere le parentesi anche in object, forse, non lo so in realtà
 
 %%% inizio scrittura di jsonparse
-jsonparse("", []).
-jsonparse([],[]).
-jsonparse(['{','}'],[]).
-jsonparse(['[',']'],[]).
+jsonparse("", [null]).
+jsonparse([],[null]).
+jsonparse(['{','}'],[jsonobj]).
+jsonparse(['[',']'],[jsonarray]).
 
 jsonparse(JSONString, Object) :-
     atom(JSONString),
@@ -281,9 +277,18 @@ jsonread(FileName, JSON) :-
 jsondump("", "").
 
 jsondump(JSON, FileName) :-
+    \+(is_list(JSON)),
+    !,
     jsonparse(JSON, _),
     open(FileName, write, Out, [create([write])]),
     write(Out, JSON),
+    close(Out).
+
+jsondump(JSON, FileName) :-
+    jsonparse(MetaString, JSON),
+    atomics_to_string(MetaString, '\s', String),
+    open(FileName, write, Out, [create([write])]),
+    write(Out, String),
     close(Out).
     
 
