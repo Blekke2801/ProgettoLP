@@ -1,21 +1,3 @@
-%%% verifica oggetto o array prolog
-jsonobj([[Attr, Value] | Members]) :-
-    string(Attr),
-    (
-        is_list(Value);
-        string(Value);
-        number(Value)
-    ),
-    jsonobj(Members).
-
-jsonarray([Value | Elements]) :-
-    (
-        is_list(Value);
-        string(Value);
-        number(Value)
-    ),
-    jsonarray(Elements).
-
 %%% trim elimina tot elementi allinizio di una lista utlizzando l'append
 trim(L,N,S) :-    
     length(P,N),   
@@ -43,7 +25,6 @@ subobj(['}' | List], N, ['}' | Object]) :-
 
 subobj([A | List], N, [A | Object]) :-
     N > 0,
-    !,
     subobj(List, N, Object).
 
 %%% subarray/3 subarray([A | List], N, [A | Object])
@@ -65,7 +46,6 @@ subarray([']' | List], N, [']' | Object]) :-
 
 subarray([A | List], N, [A | Object]) :-
     N > 0,
-    !,
     subarray(List, N, Object).
 
 %%% unify/2 unify(CharList, UnifiedList)
@@ -150,6 +130,20 @@ jsonparse(['{', Attr, ':', Value , '}'], [[Attr, Value]]) :-
     ),
     jsonparse(['{','}'], _).
 
+jsonparse(['{', Attr, ':', '{', '}', '}'], [[Attr, [jsonobj]]]) :-
+    string(Attr),
+    !.
+
+jsonparse(['{', Attr, ':', '[', ']', '}'], [[Attr, [jsonarray]]]) :-
+    string(Attr),
+    !.
+
+jsonparse(['[''{', '}', ']'], [[jsonobj]]) :-
+    !.
+
+jsonparse(['[''[', ']', ']'], [[jsonarray]]) :-
+    !.
+
 jsonparse(['[', Value, ']'], [Value]) :-
     (
         number(Value);
@@ -177,7 +171,11 @@ jsonparse(['{', Attr, ':', '{' , D | Members], [[Attr, ParsedValue] | Object]) :
     jsonparse(['{' | TrueValue], ParsedValue),
     jsonparse(['{' | NextMembers], Object).
 
-jsonparse(['{', Attr, ':', '{' , '}' | Members], [[Attr, []] | Object]) :-
+jsonparse(['{', Attr, ':', '{' , '}' | Members], [[Attr, [jsonobj]] | Object]) :-
+    string(Attr),
+    jsonparse(['{' | Members], Object).
+
+jsonparse(['{', Attr, ':', '[' , ']' | Members], [[Attr, [jsonarray]] | Object]) :-
     string(Attr),
     jsonparse(['{' | Members], Object).
 
@@ -198,7 +196,7 @@ jsonparse(['[', '{', D | MoreValues], [ParsedValue | Object]) :-
     jsonparse(['{' | TrueValue], ParsedValue),
     jsonparse(['[' | NextValues], Object).
 
-jsonparse(['[', '{', '}' | MoreValues], [[] | Object]) :-
+jsonparse(['[', '{', '}' | MoreValues], [[jsonobj] | Object]) :-
     jsonparse(['[' | MoreValues], Object).
 
 jsonparse(['[', '[', D | MoreValues], [ParsedValue | Object]) :-
@@ -211,7 +209,7 @@ jsonparse(['[', '[', D | MoreValues], [ParsedValue | Object]) :-
     jsonparse(['[' | TrueValue], ParsedValue),
     jsonparse(['[' | NextValues], Object).
 
-jsonparse(['[', '[', ']' | MoreValues], [[] | Object]) :-
+jsonparse(['[', '[', ']' | MoreValues], [[jsonarray] | Object]) :-
     jsonparse(['[' | MoreValues], Object).
 
 %%% jsonaccess/3 jsonaccess(Jsonobj, Fields, Result).
