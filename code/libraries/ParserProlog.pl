@@ -13,7 +13,7 @@ subobj(['{' | List], N, ['{' | Object]) :-
     !,
     subobj(List, N1, Object).
 
-subobj(['}' | List], N, ['}']) :-
+subobj(['}' | _], N, ['}']) :-
     N1 is N - 1,
     N1 =:= 0,
     !.
@@ -35,7 +35,7 @@ subarray(['[' | List], N, ['[' | Object]) :-
     !,
     subarray(List, N1, Object).
 
-subarray([']' | List], N, [']']) :-
+subarray([']' | _], N, [']']) :-
     N1 is N - 1,
     N1 =:= 0,
     !.
@@ -239,11 +239,32 @@ jsonaccess([[Attr, Value] | _], Attr, Value) :-
 
 jsonaccess([[_, _] | Members], Field, Result) :-
     string(Field),
-    jsonaccess(Members, Field, Result).
+    nth0(_,[[_, _] | Members],[Field, Result]).
+
+jsonaccess([[Attr, Value] | _], [Attr], [Value]) :-
+    string(Attr),
+    !.
+
+jsonaccess([[_, _] | Members], [Field], [Result]) :-
+    string(Field),
+    nth0(_,[[_, _] | Members],[Field, Result]),
+    !.
+
+jsonaccess([Value | Elements], [Index], Result) :-
+    integer(Index),
+    length([Value | Elements], Int),
+    Index < Int,
+    !,
+    nth0(Index,[Value | Elements], Result).
 
 jsonaccess([[Attr, Value] | Members], [Attr | Fields], [Value | Result]) :-
     string(Attr),
-    jsonaccess(Members, Fields, Result).    
+    jsonaccess([[Attr, Value] | Members], Fields, Result).    
+
+jsonaccess([[_, _] | Members], [Attr | Fields], [Elem | Results]) :-
+    string(Attr),
+    nth0(_,[[_, _] | Members],[Attr, Elem]),
+    jsonaccess([[_, _] | Members], Fields, Results). 
 
 jsonaccess([Value | Elements], Index, Result) :-
     integer(Index),
