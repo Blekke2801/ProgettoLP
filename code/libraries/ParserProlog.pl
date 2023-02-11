@@ -335,9 +335,24 @@ jsondump(JSON, FileName) :-
 
 jsondump(JSON, FileName) :-
     jsonparse(MetaString, JSON),
-    atomics_to_string(MetaString, '\s', String),
+    addquotes(MetaString, TString),
+    atomics_to_string(TString, '\s', String),
     open(FileName, write, Out, [create([write])]),
     write(Out, String),
     close(Out).
+
+addquotes([], []).
+
+addquotes([A | List], [B | Result]) :-
+    string(A),
+    !,
+    append([['\"'], [A],['\"']], Comp),
+    atomics_to_string(Comp, B),
+    addquotes(List, Result).
+
+    addquotes([A | List], [A | Result]) :-
+        addquotes(List, Result).
+    
+
     
 
