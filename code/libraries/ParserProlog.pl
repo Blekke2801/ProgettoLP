@@ -347,6 +347,7 @@ jsonaccess([jsonarray, Value | Elements], [Index | Indexes], [Elem | Result]) :-
 %%% legge da un file una stringa json
 
 jsonread("",[]).
+jsonread('',[]).
 
 jsonread(FileName, JSON) :-
     read_file_to_string(FileName, String, []),
@@ -356,6 +357,7 @@ jsonread(FileName, JSON) :-
 %%% scrive in un file una stringa json
 
 jsondump("", "").
+jsondump('','').
 
 jsondump(JSON, FileName) :-
     \+(is_list(JSON)),
