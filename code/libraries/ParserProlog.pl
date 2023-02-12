@@ -1,9 +1,36 @@
+%%% inizio funzioni di utility
+
+%%% addquotes/2 addquotes([A | List], [B | Result]) 
+%%% aggiunge 2 doppi apici ai confini della stringa, questa funzione serve perché 
+%%% atomics_to_string trasformando una lista in una stringa, le stringhe all'interno perdono 
+%%% i doppi apici, che servono per la riconversione
+addquotes([], []).
+
+addquotes([A | List], [B | Result]) :-
+    string(A),
+    !,
+    append([['\"'], [A],['\"']], Comp),
+    atomics_to_string(Comp, B),
+    addquotes(List, Result).
+
+    addquotes([A | List], [A | Result]) :-
+        addquotes(List, Result).
+
+%%% compare_list/2 compare_list([L1Head | L1Tail], List2)
+%%% compara 2 liste se sono uguali
+compare_list([],[]).
+compare_list([],_).
+
+compare_list([L1Head | L1Tail], List2) :-
+    member(L1Head, List2),
+    compare_list(L1Tail, List2).
+
 %%% trim elimina tot elementi allinizio di una lista utlizzando l'append
 trim(L,N,S) :-    
     length(P,N),   
     append(P,S,L).
 
-%%% subobj/3 subobj([A | List], N, [A | Object])
+%%% subobj/2 subobj([A | List], [A | Object])
 %%% prendendo in input una lista con agli estremi delle parentesi graffe, crea una lista contenente un sotto-oggetto
 subobj([], []).
 
@@ -23,7 +50,7 @@ subobj([A | List], [A | Object]) :-
     \+(A == '{'),
     subobj(List, Object).
 
-%%% subarray/3 subarray([A | List], N, [A | Object])
+%%% subarray/2 subarray([A | List], [A | Object])
 %%% subarray in input una lista con agli estremi delle parentesi quadrate, crea una lista contenente un sotto-array
 subarray([], []).
 
@@ -88,6 +115,9 @@ unifynumbers(['.' | As], ['.' | Ns]) :-
 
 unifynumbers(_, []) :-
     !.
+ 
+%%% fine funzioni di utility
+
 
 %%% jsonparse/2 jsonparse(JSONString, Object).
 %%% prima funzione, vera quando la stringa può essere scomposta in stringhe numeri o termini composti
@@ -96,8 +126,8 @@ unifynumbers(_, []) :-
 %%% inizio scrittura di jsonparse
 jsonparse("", [null]).
 jsonparse([],[null]).
-jsonparse(['{','}'],[jsonobj]).
-jsonparse(['[',']'],[jsonarray]).
+jsonparse(['{','}'],[]).
+jsonparse(['[',']'],[]).
 
 jsonparse(JSONString, [jsonobj | Object]) :-
     atom(JSONString),
@@ -105,23 +135,21 @@ jsonparse(JSONString, [jsonobj | Object]) :-
     unify(Chars, Xt),
     delete(Xt, '\t', Xd),
     delete(Xd, '\s', Xe),
-    delete(Xe, '\n', Xf),
-    jsonparse(Xf, Comp0),
-    member(jsonobj, Comp0),
-    \+(member(jsonarray, Comp0)),
-    delete(Comp0, jsonobj, Object).
+    delete(Xe, '\n', [X | Xf]),
+    X == '{',
+    !,
+    jsonparse([X | Xf], Object).
 
 jsonparse(JSONString, [jsonarray | Object]) :-
     atom(JSONString),
+    !,
     atom_chars(JSONString, Chars),
     unify(Chars, Xt),
     delete(Xt, '\t', Xd),
     delete(Xd, '\s', Xe),
-    delete(Xe, '\n', Xf),
-    jsonparse(Xf, Comp0),
-    member(jsonarray, Comp0),
-    \+(member(jsonobj, Comp0)),
-    delete(Comp0, jsonarray, Object).
+    delete(Xe, '\n', [X | Xf]),
+    X == '[',
+    jsonparse([X | Xf], Object).
 
 jsonparse(JSONString, [jsonobj | Object]) :-
     string(JSONString),
@@ -129,11 +157,10 @@ jsonparse(JSONString, [jsonobj | Object]) :-
     unify(Chars,Xt),
     delete(Xt, '\t', Xd),
     delete(Xd, '\s', Xe),
-    delete(Xe, '\n', Xf),
-    jsonparse(Xf, Comp0),
-    member(jsonobj, Comp0),
-    \+(member(jsonarray, Comp0)),
-    delete(Comp0, jsonobj, Object).
+    delete(Xe, '\n', [X | Xf]),
+    X == '{',
+    !,
+    jsonparse([X | Xf], Object).
 
 jsonparse(JSONString, [jsonarray | Object]) :-
     string(JSONString),
@@ -141,28 +168,26 @@ jsonparse(JSONString, [jsonarray | Object]) :-
     unify(Chars,Xt),
     delete(Xt, '\t', Xd),
     delete(Xd, '\s', Xe),
-    delete(Xe, '\n', Xf),
-    jsonparse(Xf, Comp0),
-    member(jsonarray, Comp0),
-    \+(member(jsonobj, Comp0)),
-    delete(Comp0, jsonarray, Object).
+    delete(Xe, '\n', [X | Xf]),
+    X == '[',
+    jsonparse([X | Xf], Object).
 
-jsonparse(['{', Attr, ':', Value , '}'], [jsonobj, [Attr, Value]]) :-
+jsonparse(['{', Attr, ':', Value , '}'], [[Attr, Value]]) :-
     string(Attr),
     (
         number(Value);
         string(Value)
     ),
-    jsonparse(['{','}'], _).
+    !.
 
-jsonparse(['[', Value, ']'], [jsonarray, Value]) :-
+jsonparse(['[', Value, ']'], [Value]) :-
     (
         number(Value);
         string(Value)
     ),
-    jsonparse(['[',']'], _).
+    !.
 
-jsonparse(['{', Attr, ':', Value , ',' | Members], [jsonobj, [Attr, Value] | Object]) :-
+jsonparse(['{', Attr, ':', Value , ',' | Members], [[Attr, Value] | Object]) :-
     string(Attr),
     (
         string(Value);
@@ -170,90 +195,97 @@ jsonparse(['{', Attr, ':', Value , ',' | Members], [jsonobj, [Attr, Value] | Obj
     ),
     jsonparse(['{' | Members], Object).
 
-jsonparse(['{', Attr, ':', '{' , D | Members], [jsonobj, [Attr, [jsonobj | ParsedValue]] | Object]) :-
+jsonparse(['{', Attr, ':', '{' | Members], [[Attr, [jsonobj | ParsedValue]]]) :-
     string(Attr),
-    \+(D == '}'),
-    !,
-    subobj([D | Members], TrueValue),
+    subobj(Members, TrueValue),
     length(TrueValue, N),
     N1 is N + 4,
-    trim(['{', Attr, ':', '{' , D | Members], N1, NextMembers),
-    jsonparse(['{' | TrueValue], Comp0),
-    member(jsonobj, Comp0),
-    delete(Comp0, jsonobj, ParsedValue),
-    jsonparse(['{' | NextMembers], Object).
+    trim(['{', Attr, ':', '{' | Members], N1, NextMembers),
+    jsonparse(['{' | TrueValue], ParsedValue),
+    compare_list(['{' | NextMembers], ['[', ']']),
+    !.
 
-jsonparse(['{', Attr, ':', '{' , '}' | Members], [jsonobj, [Attr, [jsonobj]] | Object]) :-
+jsonparse(['{', Attr, ':', '[' | Members], [[Attr, [jsonarray | ParsedValue]]]) :-
     string(Attr),
-    jsonparse(['{' | Members], Object).
-
-jsonparse(['{', Attr, ':', '[' , D | Members], [jsonobj, [Attr, [jsonarray | ParsedValue]] | Object]) :-
-    string(Attr),
-    \+(D == '}'),
-    !,
-    subarray([D | Members], TrueValue),
+    subarray(Members, TrueValue),
     length(TrueValue, N),
     N1 is N + 4,
-    trim(['{', Attr, ':', '[' , D | Members], N1, NextMembers),
-    jsonparse(['[' | TrueValue], Comp0),
-    member(jsonarray, Comp0),
-    delete(Comp0, jsonarray, ParsedValue),
+    trim(['{', Attr, ':', '[' | Members], N1, NextMembers),
+    jsonparse(['[' | TrueValue], ParsedValue),
+    compare_list(['{' | NextMembers], ['[', ']']),
+    !.
+
+jsonparse(['{', Attr, ':', '{' | Members], [[Attr, [jsonobj | ParsedValue]] | Object]) :-
+    string(Attr),
+    subobj(Members, TrueValue),
+    length(TrueValue, N),
+    N1 is N + 4,
+    trim(['{', Attr, ':', '{' | Members], N1, NextMembers),
+    jsonparse(['{' | TrueValue], ParsedValue),
     jsonparse(['{' | NextMembers], Object).
 
-
-jsonparse(['{', Attr, ':', '[' , ']' | Members], [jsonobj, [Attr, [jsonarray]] | Object]) :-
+jsonparse(['{', Attr, ':', '[' | Members], [[Attr, [jsonarray | ParsedValue]] | Object]) :-
     string(Attr),
-    jsonparse(['{' | Members], Object).
+    subarray(Members, TrueValue),
+    length(TrueValue, N),
+    N1 is N + 4,
+    trim(['{', Attr, ':', '[' | Members], N1, NextMembers),
+    jsonparse(['[' | TrueValue], ParsedValue),
+    jsonparse(['{' | NextMembers], Object).
 
-jsonparse(['[', Value, ',' | MoreValues], [jsonarray, Value | Objects]) :-
+jsonparse(['[', Value, ',' | MoreValues], [Value | Objects]) :-
     (
         string(Value);
         number(Value)
     ),
     jsonparse(['[' | MoreValues], Objects).
 
-jsonparse(['[', '{', D | MoreValues], [jsonarray, [jsonobj | ParsedValue] | Object]) :-
-    \+(D == '}'),
-    !,
-    subobj([D | MoreValues], TrueValue),
+jsonparse(['[', '{' | MoreValues], [[jsonobj | ParsedValue]]) :-
+    subobj(MoreValues, TrueValue),
     length(TrueValue, N),
     N1 is N + 2,
-    trim(['[', '{', D | MoreValues], N1, NextValues),
-    jsonparse(['{' | TrueValue], Comp0),
-    member(jsonobj, Comp0),
-    delete(Comp0, jsonobj, ParsedValue),
-    jsonparse(['[' | NextValues], Object).
+    trim(['[', '{', MoreValues], N1, NextValues),
+    jsonparse(['{' | TrueValue], ParsedValue),
+    compare_list(['[' | NextValues], ['[', ']']),
+    !.
 
-jsonparse(['[', '[', D | MoreValues], [jsonarray, [jsonarray | ParsedValue] | Object]) :-
-    \+(D == ']'),
-    !,
-    subarray([D | MoreValues], TrueValue),
+jsonparse(['[', '[' | MoreValues], [[jsonarray | ParsedValue]]) :-
+    subarray(MoreValues, TrueValue),
     length(TrueValue, N),
     N1 is N + 2,
-    trim(['[', '[', D | MoreValues], N1, NextValues),
-    jsonparse('[' | TrueValue, Comp0),
-    member(jsonarray, Comp0),
-    delete(Comp0, jsonarray, ParsedValue),
+    trim(['[', '[' | MoreValues], N1, NextValues),
+    jsonparse(['[' | TrueValue], ParsedValue),
+    compare_list(['[' | NextValues], ['[', ']']),
+    !.
+
+jsonparse(['[', '{' | MoreValues], [[jsonobj | ParsedValue] | Object]) :-
+    subobj(MoreValues, TrueValue),
+    length(TrueValue, N),
+    N1 is N + 2,
+    trim(['[', '{', MoreValues], N1, NextValues),
+    jsonparse(['{' | TrueValue], ParsedValue),
     jsonparse(['[' | NextValues], Object).
 
-jsonparse(['[', '{', '}' | MoreValues], [[jsonobj] | Object]) :-
-    jsonparse(['[' | MoreValues], Object).
+jsonparse(['[', '[' | MoreValues], [[jsonarray | ParsedValue] | Object]) :-
+    subarray(MoreValues, TrueValue),
+    length(TrueValue, N),
+    N1 is N + 2,
+    trim(['[', '[' | MoreValues], N1, NextValues),
+    jsonparse(['[' | TrueValue], ParsedValue),
+    jsonparse(['[' | NextValues], Object).
 
-jsonparse(['[', '[', ']' | MoreValues], [jsonarray, [jsonarray] | Object]) :-
-    jsonparse(['[' | MoreValues], Object).
 
 %%% jsonaccess/3 jsonaccess(Jsonobj, Fields, Result).
 %%% vero quando Result è recuperabile seguendo la catena di campi presenti in Fields
 %%% (una lista) a partire da Jsonobj. Un campo rappresentato da N (con N un numero maggiore o
 %%% uguale a 0) corrisponde a un indice di un array JSON.
-
 jsonaccess("", [], []).
 jsonaccess([], [], []).
 
 jsonaccess("", [], _) :- 
     jsonaccess("", [], []).
 
-jsonaccess(_, [], _) :-
+jsonaccess(_, [], []) :-
     !.
 
 jsonaccess(JSONString, Fields, Result) :-
@@ -264,46 +296,46 @@ jsonaccess(JSONString, Fields, Result) :-
     jsonparse(JSONString, Object),
     jsonaccess(Object, Fields, Result).
 
-jsonaccess([[Attr, Value] | _], Attr, Value) :-
+jsonaccess([jsonobj, [Attr, Value] | _], Attr, Value) :-
     string(Attr).
 
-jsonaccess([[_, _] | Members], Field, Result) :-
+jsonaccess([jsonobj, [_, _] | Members], Field, Result) :-
     string(Field),
     nth0(_, Members, [Field, Result]).
 
-jsonaccess([[Attr, Value] | _], [Attr], [Value]) :-
+jsonaccess([jsonobj, [Attr, Value] | _], [Attr], [Value]) :-
     string(Attr),
     !.
 
-jsonaccess([[_, _] | Members], [Field], [Result]) :-
+jsonaccess([jsonobj, [_, _] | Members], [Field], [Result]) :-
     string(Field),
     nth0(_, Members, [Field, Result]),
     !.
 
-jsonaccess([Value | Elements], [Index], Result) :-
+jsonaccess([jsonarray, Value | Elements], [Index], Result) :-
     integer(Index),
     length([Value | Elements], Int),
     Index < Int,
     !,
     nth0(Index,[Value | Elements], Result).
 
-jsonaccess([[Attr, Value] | Members], [Attr | Fields], [Value | Result]) :-
+jsonaccess([jsonobj, [Attr, Value] | Members], [Attr | Fields], [Value | Result]) :-
     string(Attr),
     jsonaccess([[Attr, Value] | Members], Fields, Result).    
 
-jsonaccess([[_, _] | Members], [Attr | Fields], [Elem | Results]) :-
+jsonaccess([jsonobj, [_, _] | Members], [Attr | Fields], [Elem | Results]) :-
     string(Attr),
     nth0(_,[[_, _] | Members],[Attr, Elem]),
     jsonaccess([[_, _] | Members], Fields, Results). 
 
-jsonaccess([Value | Elements], Index, Result) :-
+jsonaccess([jsonarray, Value | Elements], Index, Result) :-
     integer(Index),
     length([Value | Elements], Int),
     Index < Int,
     !,
     nth0(Index,[Value | Elements], Result).
 
-jsonaccess([Value | Elements], [Index | Indexes], [Elem | Result]) :-
+jsonaccess([jsonarray, Value | Elements], [Index | Indexes], [Elem | Result]) :-
     integer(Index),
     length([Value | Elements], Int),
     Index < Int,
@@ -327,13 +359,12 @@ jsondump("", "").
 
 jsondump(JSON, FileName) :-
     \+(is_list(JSON)),
-    !,
     jsonparse(JSON, _),
     open(FileName, write, Out, [create([write])]),
     write(Out, JSON),
     close(Out).
 
-jsondump(JSON, FileName) :-
+jsondump([_ | JSON], FileName) :-
     jsonparse(MetaString, JSON),
     addquotes(MetaString, TString),
     atomics_to_string(TString, '\s', String),
@@ -341,17 +372,6 @@ jsondump(JSON, FileName) :-
     write(Out, String),
     close(Out).
 
-addquotes([], []).
-
-addquotes([A | List], [B | Result]) :-
-    string(A),
-    !,
-    append([['\"'], [A],['\"']], Comp),
-    atomics_to_string(Comp, B),
-    addquotes(List, Result).
-
-    addquotes([A | List], [A | Result]) :-
-        addquotes(List, Result).
     
 
     
