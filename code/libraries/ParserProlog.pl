@@ -279,7 +279,8 @@ jsonparse(['[', '[' | Vals], Object) :-
 %%% (una lista) a partire da Jsonobj. Un campo rappresentato da N (con N un numero maggiore o
 %%% uguale a 0) corrisponde a un indice di un array JSON.
 jsonaccess("", [], []).
-jsonaccess([], [], []).
+jsonaccess(jsonarray([]), [], []).
+jsonaccess(jsonobj([]), [], []).
 
 jsonaccess("", [], _) :- 
     jsonaccess("", [], []).
