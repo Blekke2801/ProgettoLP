@@ -129,7 +129,7 @@ jsonparse([],[null]).
 jsonparse(['{','}'],[]).
 jsonparse(['[',']'],[]).
 
-jsonparse(JSONString, [jsonobj | Object]) :-
+jsonparse(JSONString, jsonobj(Object)) :-
     atom(JSONString),
     atom_chars(JSONString, Chars),
     unify(Chars, Xt),
@@ -140,7 +140,7 @@ jsonparse(JSONString, [jsonobj | Object]) :-
     !,
     jsonparse([X | Xf], Object).
 
-jsonparse(JSONString, [jsonarray | Object]) :-
+jsonparse(JSONString, jsonarray(Object)) :-
     atom(JSONString),
     !,
     atom_chars(JSONString, Chars),
@@ -151,7 +151,7 @@ jsonparse(JSONString, [jsonarray | Object]) :-
     X == '[',
     jsonparse([X | Xf], Object).
 
-jsonparse(JSONString, [jsonobj | Object]) :-
+jsonparse(JSONString, jsonobj(Object)) :-
     string(JSONString),
     string_chars(JSONString, Chars),
     unify(Chars,Xt),
@@ -162,7 +162,7 @@ jsonparse(JSONString, [jsonobj | Object]) :-
     !,
     jsonparse([X | Xf], Object).
 
-jsonparse(JSONString, [jsonarray | Object]) :-
+jsonparse(JSONString, jsonarray(Object)) :-
     string(JSONString),
     string_chars(JSONString, Chars),
     unify(Chars,Xt),
@@ -180,12 +180,12 @@ jsonparse(['{', Attr, ':', Val , '}'], [[Attr, Val]]) :-
     ),
     !.
 
-jsonparse(['{', Attr, ':', ['{' | Val] , '}'], [[Attr, [jsonobj | PVal]]]) :-
+jsonparse(['{', Attr, ':', ['{' | Val] , '}'], [[Attr, jsonobj([PVal])]]) :-
     string(Attr),
     jsonparse(['{' | Val],PVal),
     !.
 
-jsonparse(['{', Attr, ':', ['[' | Val] , '}'], [[Attr, [jsonarray | PVal]]]) :-
+jsonparse(['{', Attr, ':', ['[' | Val] , '}'], [[Attr, jsonarray([PVal])]]) :-
     string(Attr),
     jsonparse(['[' | Val], PVal),
     !.
@@ -197,11 +197,11 @@ jsonparse(['[', Val, ']'], [Val]) :-
     ),
     !.
 
-jsonparse(['[', ['{' | Val], ']'], [[jsonobj | PVal]]) :-
+jsonparse(['[', ['{' | Val], ']'], [jsonobj([PVal])]) :-
     jsonparse(['{' | Val],PVal),
     !.
 
-jsonparse(['[', ['[' | Val], ']'], [[jsonarray | PVal]]) :-
+jsonparse(['[', ['[' | Val], ']'], [jsonarray([PVal])]) :-
     jsonparse(['[' | Val], PVal),
     !.    
     
@@ -213,12 +213,12 @@ jsonparse(['{', Attr, ':', Val , ',' | Members], [[Attr, Val] | Object]) :-
     ),
     jsonparse(['{' | Members], Object).
 
-jsonparse(['{', Attr, ':', ['{' | Val], ',' | Members], [[Attr, [jsonobj | PVal]] | Objects]) :-
+jsonparse(['{', Attr, ':', ['{' | Val], ',' | Members], [[Attr, jsonobj([PVal])] | Objects]) :-
     string(Attr),
     jsonparse(['{' | Val],PVal),
     jsonparse(['{' | Members], Objects).
 
-jsonparse(['{', Attr, ':', ['[' | Val], ',' | Members], [[Attr, [jsonarray | PVal]] | Objects]) :-
+jsonparse(['{', Attr, ':', ['[' | Val], ',' | Members], [[Attr, jsonarray([PVal])] | Objects]) :-
     string(Attr),
     jsonparse(['[' | Val], PVal),
     jsonparse(['{' | Members], Objects).
@@ -249,11 +249,11 @@ jsonparse(['[', Val, ',' | Vals], [Val | Objects]) :-
     !,
     jsonparse(['[' | Vals], Objects).
 
-jsonparse(['[', ['{' | Val], ',' | Vals], [[jsonobj | PVal] | Objects]) :-
+jsonparse(['[', ['{' | Val], ',' | Vals], [jsonobj([PVal]) | Objects]) :-
     jsonparse(['{' | Val],PVal),
     jsonparse(['[' | Vals], Objects).
 
-jsonparse(['[', ['[' | Val], ',' | Vals], [[jsonarray | PVal] | Objects]) :-
+jsonparse(['[', ['[' | Val], ',' | Vals], [jsonarray([PVal]) | Objects]) :-
     jsonparse(['[' | Val], PVal),
     jsonparse(['[' | Vals], Objects).
 
@@ -295,46 +295,46 @@ jsonaccess(JSONString, Fields, Res) :-
     jsonparse(JSONString, Object),
     jsonaccess(Object, Fields, Res).
 
-jsonaccess([jsonobj, [Attr, Val] | _], Attr, Val) :-
+jsonaccess(jsonobj([[Attr, Val] | _]), Attr, Val) :-
     string(Attr).
 
-jsonaccess([jsonobj, [_, _] | Members], Field, Res) :-
+jsonaccess(jsonobj([[_, _] | Members]), Field, Res) :-
     string(Field),
     nth0(_, Members, [Field, Res]).
 
-jsonaccess([jsonobj, [Attr, Val] | _], [Attr], [Val]) :-
+jsonaccess(jsonobj([[Attr, Val] | _]), [Attr], [Val]) :-
     string(Attr),
     !.
 
-jsonaccess([jsonobj, [_, _] | Members], [Field], [Res]) :-
+jsonaccess(jsonobj([[_, _] | Members]), [Field], [Res]) :-
     string(Field),
     nth0(_, Members, [Field, Res]),
     !.
 
-jsonaccess([jsonarray, Val | Elements], [Index], Res) :-
+jsonaccess(jsonarray([Val | Elements]), [Index], Res) :-
     integer(Index),
     length([Val | Elements], Int),
     Index < Int,
     !,
     nth0(Index,[Val | Elements], Res).
 
-jsonaccess([jsonobj, [Attr, Val] | Members], [Attr | Fields], [Val | Res]) :-
+jsonaccess(jsonobj([[Attr, Val] | Members]), [Attr | Fields], [Val | Res]) :-
     string(Attr),
     jsonaccess([[Attr, Val] | Members], Fields, Res).    
 
-jsonaccess([jsonobj, [_, _] | Members], [Attr | Fields], [Elem | Ress]) :-
+jsonaccess(jsonobj([[_, _] | Members]), [Attr | Fields], [Elem | Ress]) :-
     string(Attr),
     nth0(_,[[_, _] | Members],[Attr, Elem]),
     jsonaccess([[_, _] | Members], Fields, Ress). 
 
-jsonaccess([jsonarray, Val | Elements], Index, Res) :-
+jsonaccess(jsonarray([Val | Elements]), Index, Res) :-
     integer(Index),
     length([Val | Elements], Int),
     Index < Int,
     !,
     nth0(Index,[Val | Elements], Res).
 
-jsonaccess([jsonarray, Val | Elements], [Index | Indexes], [Elem | Res]) :-
+jsonaccess(jsonarray([Val | Elements]), [Index | Indexes], [Elem | Res]) :-
     integer(Index),
     length([Val | Elements], Int),
     Index < Int,
@@ -358,14 +358,7 @@ jsonread(FileName, JSON) :-
 jsondump("", "").
 jsondump('','').
 
-jsondump(JSON, FileName) :-
-    \+(is_list(JSON)),
-    jsonparse(JSON, _),
-    open(FileName, write, Out, [create([write])]),
-    write(Out, JSON),
-    close(Out).
-
-jsondump([_ | JSON], FileName) :-
+jsondump(jsonobj(JSON), FileName) :-
     jsonparse(MetaString, JSON),
     flatten(MetaString, L),
     addquotes(L, TString),
@@ -373,6 +366,26 @@ jsondump([_ | JSON], FileName) :-
     open(FileName, write, Out, [create([write])]),
     write(Out, String),
     close(Out).
+
+jsondump(jsonarray(JSON), FileName) :-
+    jsonparse(MetaString, JSON),
+    flatten(MetaString, L),
+    addquotes(L, TString),
+    atomics_to_string(TString, '\s', String),
+    open(FileName, write, Out, [create([write])]),
+    write(Out, String),
+    close(Out).
+
+jsondump(JSON, FileName) :-
+    (
+        string(JSON);
+        atom(JSON)    
+    ),
+    jsonparse(JSON, _),
+    open(FileName, write, Out, [create([write])]),
+    write(Out, JSON),
+    close(Out).
+
 
     
 
