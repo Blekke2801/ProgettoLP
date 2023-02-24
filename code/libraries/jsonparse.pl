@@ -34,8 +34,19 @@ trim(L,N,S) :-
 %%% prendendo in input una lista con agli estremi delle parentesi graffe, crea una lista contenente un sotto-oggetto
 subobj([], []).
 
-subobj(['{' | List], [['{' | Sub] | _]) :-
-    subobj(List, Sub).
+subobj(['{' | List], [['{' | Sub] | Object]) :-
+    subobj(List, Sub),
+    flatten(Sub,Comp),
+    length(Comp, N),
+    trim(List,N, NewList),
+    subobj(NewList, Object).
+
+subobj(['[' | List], [['[' | Sub] | Object]) :-
+    subarray(List, Sub),
+    flatten(Sub,Comp),
+    length(Comp, N),
+    trim(List,N, NewList),
+    subobj(NewList, Object).
 
 subobj(['}' | _], ['}']) :-
     !.
@@ -49,8 +60,19 @@ subobj([A | List], [A | Object]) :-
 %%% subarray in input una lista con agli estremi delle parentesi quadrate, crea una lista contenente un sotto-array
 subarray([], []).
 
-subarray(['[' | List], [['[' | Sub] | _]) :-
-    subarray(List,  Sub).
+subarray(['[' | List], [['[' | Sub] | Object]) :-
+    subarray(List, Sub),
+    flatten(Sub,Comp),
+    length(Comp, N),
+    trim(List,N, NewList),
+    subarray(NewList, Object).
+
+subarray(['{' | List], [['{' | Sub] | Object]) :-
+    subobj(List, Sub),
+    flatten(Sub,Comp),
+    length(Comp, N),
+    trim(List,N, NewList),
+    subarray(NewList, Object).
 
 subarray([']' | _], [']']) :-
     !.
@@ -170,12 +192,12 @@ jsonparse(['{', Attr, ':', Val , '}'], [(Attr, Val)]) :-
     ),
     !.
 
-jsonparse(['{', Attr, ':', ['{' | Val] , '}'], [(Attr, jsonobj([PVal]))]) :-
+jsonparse(['{', Attr, ':', ['{' | Val] , '}'], [(Attr, jsonobj(PVal))]) :-
     string(Attr),
     jsonparse(['{' | Val],PVal),
     !.
 
-jsonparse(['{', Attr, ':', ['[' | Val] , '}'], [(Attr, jsonarray([PVal]))]) :-
+jsonparse(['{', Attr, ':', ['[' | Val] , '}'], [(Attr, jsonarray(PVal))]) :-
     string(Attr),
     jsonparse(['[' | Val], PVal),
     !.
@@ -187,11 +209,11 @@ jsonparse(['[', Val, ']'], [Val]) :-
     ),
     !.
 
-jsonparse(['[', ['{' | Val], ']'], [jsonobj([PVal])]) :-
+jsonparse(['[', ['{' | Val], ']'], [jsonobj(PVal)]) :-
     jsonparse(['{' | Val],PVal),
     !.
 
-jsonparse(['[', ['[' | Val], ']'], [jsonarray([PVal])]) :-
+jsonparse(['[', ['[' | Val], ']'], [jsonarray(PVal)]) :-
     jsonparse(['[' | Val], PVal),
     !.    
     
@@ -203,12 +225,12 @@ jsonparse(['{', Attr, ':', Val , ',' | Members], [(Attr, Val) | Object]) :-
     ),
     jsonparse(['{' | Members], Object).
 
-jsonparse(['{', Attr, ':', ['{' | Val], ',' | Members], [(Attr, jsonobj([PVal])) | Objects]) :-
+jsonparse(['{', Attr, ':', ['{' | Val], ',' | Members], [(Attr, jsonobj(PVal)) | Objects]) :-
     string(Attr),
     jsonparse(['{' | Val],PVal),
     jsonparse(['{' | Members], Objects).
 
-jsonparse(['{', Attr, ':', ['[' | Val], ',' | Members], [(Attr, jsonarray([PVal])) | Objects]) :-
+jsonparse(['{', Attr, ':', ['[' | Val], ',' | Members], [(Attr, jsonarray(PVal)) | Objects]) :-
     string(Attr),
     jsonparse(['[' | Val], PVal),
     jsonparse(['{' | Members], Objects).
@@ -216,19 +238,19 @@ jsonparse(['{', Attr, ':', ['[' | Val], ',' | Members], [(Attr, jsonarray([PVal]
 jsonparse(['{', Attr, ':', '{' | Members], Object) :-
     string(Attr),
     subobj(Members, TrueVal),
-    length(TrueVal, N),
+    flatten(TrueVal,Comp),
+    length(Comp, N),
     N1 is N + 4,
     trim(['{', Attr, ':', '{' | Members], N1, NextMembers),
-    %%% jsonparse(['{' | TrueVal], PVal),
     jsonparse(['{', Attr, ':', ['{' | TrueVal] | NextMembers], Object).
 
 jsonparse(['{', Attr, ':', '[' | Members], Object) :-
     string(Attr),
     subarray(Members, TrueVal),
-    length(TrueVal, N),
+    flatten(TrueVal,Comp),
+    length(Comp, N),
     N1 is N + 4,
     trim(['{', Attr, ':', '[' | Members], N1, NextMembers),
-    %%% jsonparse(['[' | TrueVal], PVal),
     jsonparse(['{', Attr, ':', ['[' | TrueVal] | NextMembers], Object).
 
 jsonparse(['[', Val, ',' | Vals], [Val | Objects]) :-
@@ -239,28 +261,28 @@ jsonparse(['[', Val, ',' | Vals], [Val | Objects]) :-
     !,
     jsonparse(['[' | Vals], Objects).
 
-jsonparse(['[', ['{' | Val], ',' | Vals], [jsonobj([PVal]) | Objects]) :-
-    jsonparse(['{' | Val],PVal),
+jsonparse(['[', ['{' | Val], ',' | Vals], [jsonobj(PVal) | Objects]) :-
+    jsonparse(['{' | Val], PVal),
     jsonparse(['[' | Vals], Objects).
 
-jsonparse(['[', ['[' | Val], ',' | Vals], [jsonarray([PVal]) | Objects]) :-
+jsonparse(['[', ['[' | Val], ',' | Vals], [jsonarray(PVal) | Objects]) :-
     jsonparse(['[' | Val], PVal),
     jsonparse(['[' | Vals], Objects).
 
 jsonparse(['[', '{' | Vals], Object) :-
     subobj(Vals, TrueVal),
-    length(TrueVal, N),
+    flatten(TrueVal,Comp),
+    length(Comp, N),
     N1 is N + 2,
     trim(['[', '{', Vals], N1, NextVals),
-    %%% jsonparse(['{' | TrueVal], PVal),
     jsonparse(['[', ['{' | TrueVal] | NextVals], Object).
 
 jsonparse(['[', '[' | Vals], Object) :-
     subarray(Vals, TrueVal),
-    length(TrueVal, N),
+    flatten(TrueVal,Comp),
+    length(Comp, N),
     N1 is N + 2,
     trim(['[', '[' | Vals], N1, NextVals),
-    %%% jsonparse(['[' | TrueVal], PVal),
     jsonparse(['[', ['[' | TrueVal] | NextVals], Object).
 
 
@@ -269,14 +291,14 @@ jsonparse(['[', '[' | Vals], Object) :-
 %%% (una lista) a partire da Jsonobj. Un campo rappresentato da N (con N un numero maggiore o
 %%% uguale a 0) corrisponde a un indice di un array JSON.
 jsonaccess("", [], []).
-jsonaccess(jsonarray([]), [], []).
-jsonaccess(jsonobj([]), [], []).
+jsonaccess(jsonarray(_), [], []).
+jsonaccess(jsonobj(_), [], []).
+
+jsonaccess(jsonobj(Members), [], jsonobj(Members)) :-
+    !.
 
 jsonaccess("", [], _) :- 
     jsonaccess("", [], []).
-
-jsonaccess(_, [], []) :-
-    !.
 
 jsonaccess(JSONString, Fields, Res) :-
     (
@@ -289,17 +311,17 @@ jsonaccess(JSONString, Fields, Res) :-
 jsonaccess(jsonobj([(Attr, Val) | _]), Attr, Val) :-
     string(Attr).
 
-jsonaccess(jsonobj([(_, _) | Members]), Field, Res) :-
+jsonaccess(jsonobj(Members), Field, Res) :-
     string(Field),
-    nth0(_, Members, [Field, Res]).
+    nth0(_, Members, (Field, Res)).
 
-jsonaccess(jsonobj([(Attr, Val) | _]), [Attr], [Val]) :-
+jsonaccess(jsonobj([(Attr, Val) | _]), [Attr], Val) :-
     string(Attr),
     !.
 
-jsonaccess(jsonobj([(_, _) | Members]), [Field], [Res]) :-
+jsonaccess(jsonobj(Members), [Field], Res) :-
     string(Field),
-    nth0(_, Members, [Field, Res]),
+    nth0(_, Members, (Field, Res)),
     !.
 
 jsonaccess(jsonarray([Val | Elements]), [Index], Res) :-
@@ -311,12 +333,12 @@ jsonaccess(jsonarray([Val | Elements]), [Index], Res) :-
 
 jsonaccess(jsonobj([(Attr, Val) | Members]), [Attr | Fields], [Val | Res]) :-
     string(Attr),
-    jsonaccess([(Attr, Val) | Members], Fields, Res).    
+    jsonaccess(jsonobj([(Attr, Val) | Members]), Fields, Res).    
 
-jsonaccess(jsonobj([(_, _) | Members]), [Attr | Fields], [Elem | Ress]) :-
+jsonaccess(jsonobj(Members), [Attr | Fields], [Elem | Ress]) :-
     string(Attr),
-    nth0(_,[(_, _) | Members],[Attr, Elem]),
-    jsonaccess([(_, _) | Members], Fields, Ress). 
+    nth0(_,Members,[Attr, Elem]),
+    jsonaccess(jsonobj(Members), Fields, Ress). 
 
 jsonaccess(jsonarray([Val | Elements]), Index, Res) :-
     integer(Index),
@@ -331,7 +353,7 @@ jsonaccess(jsonarray([Val | Elements]), [Index | Indexes], [Elem | Res]) :-
     Index < Int,
     !,
     nth0(Index,[Val | Elements], Elem),
-    jsonaccess([Val | Elements], Indexes, Res).  
+    jsonaccess(jsonarray([Val | Elements]), Indexes, Res).  
 
 %%% jsonread/2 jsonread(FileName, JSON).
 %%% legge da un file una stringa json

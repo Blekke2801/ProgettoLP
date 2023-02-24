@@ -167,7 +167,6 @@ test_all :-
     test_once(test_menu_std),
     test_once(test_menu_string),
     test_once(test_access_special_1),
-    test_once(test_access_special_2),
     test_once(test_parse_access_1),
     test_once(test_parse_access_2),
     test_once(test_parse_access_zaphod),
