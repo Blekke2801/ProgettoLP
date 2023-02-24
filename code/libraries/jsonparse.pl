@@ -52,8 +52,6 @@ subobj(['}' | _], ['}']) :-
     !.
 
 subobj([A | List], [A | Object]) :-
-    \+(A == '}'),
-    \+(A == '{'),
     subobj(List, Object).
 
 %%% subarray/2 subarray([A | List], [A | Object])
@@ -78,8 +76,6 @@ subarray([']' | _], [']']) :-
     !.
 
 subarray([A | List], [A | Object]) :-
-    \+(A == ']'),
-    \+(A == '['),
     subarray(List, Object).
 
 %%% unify/2 unify(CharList, UnifiedList)
