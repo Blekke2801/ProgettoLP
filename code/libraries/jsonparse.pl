@@ -324,6 +324,7 @@ jsonaccess(jsonarray([Val | Elements]), [Index], Res) :-
     integer(Index),
     length([Val | Elements], Int),
     Index < Int,
+    Index >= 0,
     !,
     nth0(Index,[Val | Elements], Res).
 
@@ -340,6 +341,7 @@ jsonaccess(jsonarray([Val | Elements]), Index, Res) :-
     integer(Index),
     length([Val | Elements], Int),
     Index < Int,
+    Index >= 0,
     !,
     nth0(Index,[Val | Elements], Res).
 
@@ -347,6 +349,7 @@ jsonaccess(jsonarray([Val | Elements]), [Index | Indexes], [Elem | Res]) :-
     integer(Index),
     length([Val | Elements], Int),
     Index < Int,
+    Index >= 0,
     !,
     nth0(Index,[Val | Elements], Elem),
     jsonaccess(jsonarray([Val | Elements]), Indexes, Res).  

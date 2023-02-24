@@ -76,11 +76,9 @@
         (and (or (stringp (fourth JSON)) (numberp (fourth JSON))) (char-equal (fifth JSON) #\,))
           (cons (cons (second JSON) (fourth JSON)) (jsonparse (cons #\{ (trim 5 JSON))))
         (char-equal (fourth JSON) #\{)
-          (cons (cons (second JSON) (jsonparse (subobj (rest (third JSON)))) (jsonparse (cons #\{ (trim (+ (list-length (subobj (rest (third JSON)))) 1) JSON)))))
+          (cons (cons (second JSON) (jsonparse (subobj (rest (third JSON)))) (jsonparse (cons #\{ (trim (1+ (list-length (subobj (rest (third JSON))))) JSON)))))
         (char-equal (fourth JSON) #\[)
-          (cons (cons (second JSON) (jsonparse (subarray (rest (third JSON)))) (jsonparse (cons #\{ (trim (+ (list-length (subarray (rest (third JSON)))) 1) JSON)))))
-        (char-equal (second JSON) #\})
-          nil
+          (cons (cons (second JSON) (jsonparse (subarray (rest (third JSON)))) (jsonparse (cons #\{ (trim (1+ (list-length (subarray (rest (third JSON))))) JSON)))))
         T
           (error "stringa json non valida"))
     (char-equal (first JSON) #\[)
@@ -88,14 +86,22 @@
         (or (stringp (second JSON)) (numberp (second JSON)))
           (cons (second JSON) (jsonparse (cons #\[ (trim 3 JSON))))
         (char-equal (second JSON) #\{)
-          (cons (jsonparse (subobj (rest (second JSON)))) (jsonparse (cons #\{ (trim (+ (list-length (subarray (rest (third JSON)))) 1) JSON))))
+          (cons (jsonparse (subobj (rest (second JSON)))) (jsonparse (cons #\{ (trim (1+ (list-length (subarray (rest (third JSON))))) JSON))))
         (char-equal (second JSON) #\[)
-          (cons (jsonparse (subarray (rest (second JSON)))) (jsonparse (cons #\{ (trim (+ (list-length (subobj (rest (third JSON)))) 1) JSON))))
+          (cons (jsonparse (subarray (rest (second JSON)))) (jsonparse (cons #\{ (trim (1+ (list-length (subobj (rest (third JSON))))) JSON))))
         (char-equal (second JSON) #\])
           nil
         T
           (error "stringa json non valida"))
-  (null JSON)
+    (or (and (char-equal (first JSON) #\{) (char-equal (second JSON) #\})) (and (char-equal (first JSON) #\[) (char-equal (second JSON) #\])) (null JSON))
     nil
   T
     (error "stringa json non valida")))
+
+  (defun jsonaccess (list &rest target)
+    (cond 
+      (and (string-equal (first list) "jsonobj") (stringp (car target)))
+        (apply )
+      (and (string-equal (first list) "jsonarray") (integerp (car target)) (and (< (car target) (1- (list-length list))) (>= (car target) 0)))
+
+      ))
