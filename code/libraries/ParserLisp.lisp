@@ -132,9 +132,29 @@
 (defun deparseobj (list)
   (cond
     (and (not (null (car list))) (null (cdr list)))
-      (list (car (car list)) #\: #\Space (car (cdr list)) #\})
+      (if 
+        (listp (car list)) 
+          (cond 
+            (string-equal (car (cdr (car list))) "jsonobj")
+              (list (car (car list)) #\: #\Space  #\{ (deparseobj (cdr (car list))) #\})
+            (string-equal (car (cdr (car list))) "jsonarray")
+              (list (car (car list)) #\: #\Space  #\[ (deparsearray (cdr (car list))) #\})
+            T
+              error "lista non valida"
+          )
+      (list (car (car list)) #\: #\Space (cdr (car list)) #\}))
     (not (null (cdr list)))
-      (list (car (car list)) #\: #\Space (car (cdr list)) #\, #\Space (deparseobj (cdr list)))
+      (if 
+          (listp (car list)) 
+            (cond 
+              (string-equal (car (cdr (car list))) "jsonobj")
+                (list (car (car list)) #\: #\Space  #\{ (deparseobj (cdr (car list)))  #\, #\Space (deparseobj (cdr list)))
+              (string-equal (car (cdr (car list))) "jsonarray")
+                (list (car (car list)) #\: #\Space  #\[ (deparsearray (cdr (car list)))  #\, #\Space (deparseobj (cdr list)))
+              T
+                error "lista non valida"
+            )
+          (list (car (car list)) #\: #\Space (cdr (car list)) #\, #\Space (deparseobj (cdr list))))
     (null list)
       #\}
     T 
@@ -144,9 +164,29 @@
 (defun deparsearray (list)
   (cond
     (and (not (null (car list))) (null (cdr list)))
-      (list (car (car list)) #\])
+      (if 
+        (listp (car list)) 
+          (cond 
+            (string-equal (car (car list)) "jsonobj")
+              (list #\{ (deparseobj (cdr (car list))) #\])
+            (string-equal (car (car list)) "jsonarray")
+              (list #\[ (deparsearray (cdr (car list))) #\])
+            T
+              error "lista non valida"
+          )
+        (list (car list) #\]))
     (not (null (cdr list)))
-      (list (car list)  #\, #\Space (deparsearray (cdr list)))
+      (if 
+          (listp (car list)) 
+            (cond 
+              (string-equal (car (car list)) "jsonobj")
+                (list #\{ (deparseobj (cdr (car list))) #\, #\Space (deparsearray (cdr list)))
+              (string-equal (car (car list)) "jsonarray")
+                (list #\[ (deparsearray (cdr (car list))) #\, #\Space (deparsearray (cdr list)))
+              T
+                error "lista non valida"
+            )
+        (list (car list)  #\, #\Space (deparsearray (cdr list))))
     (null list)
       #\]
     T 
