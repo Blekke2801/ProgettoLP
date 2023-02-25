@@ -1,3 +1,9 @@
+(defun flatten (x)
+  (cond ((null x) x)
+        ((atom x) (list x))
+        (t (append (flatten (first x))
+                   (flatten (rest x))))))
+
 (defun trim (n list)
   (cond 
     (null list) 
@@ -36,9 +42,11 @@
     (null String) 
       nil
     (char-equal (first String) #\")
-      (list (coerce (unify-quotes (rest String)) 'string) (unify (trim (+ (list-length (unify-quotes (rest String))) 1) (rest String))))
+      (list (concatenate 'string (unify-quotes (rest String))) (unify (trim (+ (list-length (unify-quotes (rest String))) 1) (rest String))))
     (numberp (first String)) 
-      (list (first String) (coerce (unify-numbers (rest String)) 'float) (unify (trim (list-length (unify-numbers (rest String))) (rest String))))
+      (if (null (search #\. (unify-numbers (rest String)))))
+        (list (first String) (coerce (unify-numbers (rest String)) 'float) (unify (trim (list-length (unify-numbers (rest String))) (rest String))))
+      (list (first String) (parse-integer (concatenate 'string (unify-numbers (rest String)))) (unify (trim (list-length (unify-numbers (rest String))) (rest String))))
     T 
       (cons (first String) (unify (rest String)))))
 
@@ -98,10 +106,66 @@
   T
     (error "stringa json non valida")))
 
-  (defun jsonaccess (list &rest target)
-    (cond 
-      (and (string-equal (first list) "jsonobj") (stringp (car target)))
-        (apply )
-      (and (string-equal (first list) "jsonarray") (integerp (car target)) (and (< (car target) (1- (list-length list))) (>= (car target) 0)))
+(defun jsonaccess (list &rest target)
+  (cond 
+    (and (string-equal (first list) "jsonobj") (stringp (car target)))
+      (cons (nth (1+ (search (car target) (flatten (cdr list)))) (cdr list)) (jsonaccess list (cdr target)))
+    (and (string-equal (first list) "jsonarray") (integerp (car target)) (and (< (car target) (1- (list-length list))) (>= (car target) 0)))
+      (cons (nth target (cdr list)) (jsonaccess list (cdr target)))
+    (or (null target) (null (cdr list)) (null list))
+      nil
+    T
+      (error "impossibile effettuare jsonaccess")))
+  
+(defun file-read (file)
+(with-open-file (stream file)
+  (let ((contents (make-string (file-length stream))))
+    (read-sequence contents stream)
+    contents)))
 
-      ))
+;funzione jsonread
+
+(defun jsonread (Path)
+  (jsonparse (file-read Path)))
+
+
+(defun deparseobj (list)
+  (cond
+    (and (not (null (car list))) (null (cdr list)))
+      (list (car (car list)) #\: #\Space (car (cdr list)) #\})
+    (not (null (cdr list)))
+      (list (car (car list)) #\: #\Space (car (cdr list)) #\, #\Space (deparseobj (cdr list)))
+    (null list)
+      #\}
+    T 
+     error "lista non valida"
+  ))
+
+(defun deparsearray (list)
+  (cond
+    (and (not (null (car list))) (null (cdr list)))
+      (list (car (car list)) #\])
+    (not (null (cdr list)))
+      (list (car list)  #\, #\Space (deparsearray (cdr list)))
+    (null list)
+      #\]
+    T 
+     error "lista non valida"
+  ))
+
+
+(defun jsondeparser (list)
+  (cond 
+    (string-equal "jsonobj" (car list))
+      (cons #\{ (deparseobj (cdr list)))
+    (string-equal "jsonarray" (car list))
+      (cons #\[ (deparsearray (cdr list)))
+    T
+      error "lista non valida"))
+
+(defun jsondump (Obj Path)
+  (with-open-file (stream Path
+                          :direction :output
+                          :if-exists :supersede
+                          :if-does-not-exist :create)
+    (format stream (concatenate 'string (jsondeparser Obj)))) Path)
