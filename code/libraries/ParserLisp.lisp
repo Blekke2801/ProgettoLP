@@ -134,16 +134,15 @@
     (T
      (error "impossibile effettuare jsonaccess"))))
 
-(defun file-read (file)
-  (with-open-file (stream file)
-    (let ((contents (make-string (file-length stream))))
-      (read-sequence contents stream)
-      contents)))
 
-					;funzione jsonread
+;funzione jsonread
 
 (defun jsonread (Path)
-  (jsonparse (file-read Path)))
+  (jsonparse (let (file Path)
+    (with-open-file (stream file)
+      (let ((contents (make-string (file-length stream))))
+        (read-sequence contents stream)
+        contents)))))
 
 
 (defun deparseobj (list)
