@@ -130,7 +130,7 @@
                     (cons 'JSONARRAY 
                           (jsonparse x)))
                   (T
-                    (error "stringa json non valida preconversione")))))
+                    (error "stringa json non valida: preconversione")))))
         ((and (char-equal (first JSON) 
                           #\{) 
               (stringp (second JSON)) 
@@ -166,7 +166,7 @@
                                           (trim (1+ (list-length (subarray (cdddr x)))) 
                                                 x)))))
                   (T
-                    (error "stringa json non valida obj")))))
+                    (error "stringa json non valida: obj")))))
         ((char-equal  (first JSON) 
                       #\[)
         (let (x JSON)
@@ -190,16 +190,19 @@
                                #\{)
                     (cons (jsonparse (subobj (cddr x))) 
                           (jsonparse (cons  #\{ 
-                                            (trim (1+ (list-length (subarray (cddr x)))) x)))))
+                                            (trim (1+ (list-length (subarray (cddr x)))) 
+                                                  x)))))
                   ((char-equal  (second x) 
                                 #\[)
                     (cons (jsonparse (subarray (cddr x))) 
-                          (jsonparse (cons #\{ (trim (1+ (list-length (subobj (cddr x)))) x)))))
+                          (jsonparse (cons #\{ 
+                                           (trim (1+ (list-length (subobj (cddr x)))) 
+                                                     x)))))
                   ((char-equal  (second x) 
                                 #\])
                       nil)
                   (T
-                    (error "stringa json non valida array")))))
+                    (error "stringa json non valida: array")))))
         ((or  (and  (char-equal (first JSON) 
                                 #\{) 
                     (char-equal (second JSON) 
@@ -210,7 +213,7 @@
                                 #\])))
             nil)
         (T
-        (error "stringa json non valida totale"))))
+        (error "stringa json non valida: totale"))))
 
 ;jsonaccess 
 
@@ -247,161 +250,162 @@
 
 (defun jsonread (Path)
   (jsonparse (let (file Path)
-    (with-open-file (stream file)
-      (let ((contents (make-string (file-length stream))))
-        (read-sequence contents 
-                       stream)
-          contents)))))
+              (with-open-file (stream file)
+                (let ((contents (make-string (file-length stream))))
+                  (read-sequence contents 
+                                 stream)
+                  contents)))))
 
 
 (defun deparseobj (list)
-  (cond
-    ((and (not (null (car list))) 
-          (null (cdr list)))
-     (let (x list)
-       (if (listp (car x)) 
-             (let (y x)
-                (cond ((eq (cadar) 
-                           'JSONOBJ)
-              (list (caar) 
+  (cond ((and (not (null (car list))) 
+              (null (cdr list))
+              (stringp (caar list)))
+          (let (x (car list))
+            (if (listp (second x)) 
+                  (let ((y (second x))
+                        (z x))
+                      (cond ((eq (first y) 
+                                'JSONOBJ)
+                            (list (first z) 
+                                  #\: 
+                                  #\Space 
+                                  #\{ 
+                                  (deparseobj (rest y)) 
+                                  #\}))
+                            ((eq (first y) 
+                                'JSONARRAY)
+                              (list (first z) 
+                                    #\: 
+                                    #\Space 
+                                    #\[ 
+                                    (deparsearray (rest y))
+                                    #\}))
+                            (T
+                              (error "lista obj non valida: utlima"))))
+              (list (first x) 
                     #\: 
                     #\Space 
-                    #\{ 
-                    (deparseobj (cdar)) 
-                    #\}))
-            ((eq (cadar) 
-                 'JSONARRAY)
-             (list (caar) 
-                   #\: 
-                   #\Space 
-                   #\[ 
-                   (deparsearray (cdar))
-                   #\}))
-            (T
-             (error "lista obj non valida utlima"))
-            ))
-          (list (caar) 
-                #\: 
-                #\Space 
-                (caar) 
-                #\}))))
-    ((not (null (cdr list)))
-     (let (x list)
-       (if (listp (car x)) 
-            (let (y x)
-              (cond ((eq (cadar y)
-                         'JSONOBJ)
-             (list (caar y) 
-                   #\: 
-                   #\Space 
-                   #\{ 
-                   (deparseobj (cdar y))) 
-                   #\, 
-                   #\Space 
-                   (deparseobj (cdr y))))
-            ((eq (cadar y)
-                 'JSONARRAY)
-             (list (caar y) 
-                   #\: 
-                   #\Space 
-                   #\[ 
-                   (deparsearray (cdar y)) 
-                   #\, 
-                   #\Space 
-                   (deparseobj (cdr y))))
-            (T
-             (error "lista obj non valida non ultima"))
-            ))
-        (list (caar x) 
-              #\: 
-              #\Space 
-              (cdar x) 
-              #\})))
-    ((null list)
-     #\})
-    (T 
-     (error "lista obj non valida totale"))
-    ))
+                    (second x)
+                    #\}))))
+        ((and (not (null (car list))) 
+              (not (null (cdr list)))
+              (stringp (caar list)))
+          (let ((x (car list))
+                (f list))
+          (cond ((listp (second x)) 
+                (let ((y (second x))
+                      (z x)
+                      (f2 f))
+                    (cond ((eq (first y) 
+                              'JSONOBJ)
+                          (list (first z) 
+                                #\: 
+                                #\Space 
+                                #\{ 
+                                (deparseobj (rest y)) 
+                                #\,
+                                #\Space 
+                                (deparseobj (rest f2))))
+                          ((eq (first y) 
+                              'JSONARRAY)
+                            (list (first z) 
+                                  #\: 
+                                  #\Space 
+                                  #\[ 
+                                  (deparsearray (rest y))
+                                  #\,
+                                  #\Space 
+                                  (deparseobj (rest f2))))
+                          (T
+                            (error "lista obj non valida: sottolista")))))
+                ((or (numberp (second x))
+                    (stringp (second x)))
+                    (list (first x) 
+                          #\: 
+                          #\Space 
+                          (second x)
+                          #\,
+                          #\Space 
+                          (deparseobj (rest f)))))))
+                (T
+                    (error "lista obj non valida: tipo val"))
+                  
+        (T 
+        (error "lista obj non valida: totale"))
+        ))
 
 (defun deparsearray (list)
   (cond
     ((and (not (null (car list)))  
           (null (cdr list)))
-     (let (x list)
-       (if (listp (car x)) 
-            (let (y x)
-              (cond ((eq (cadar y) 
-                         'JSONOBJ)
-                      (list (caar y)  
-                            #\: 
-                            #\Space 
-                            #\{ 
-                            (deparseobj (cdar y)) 
-                            #\]))
-                    ((eq (cadar y)
-                         'JSONARRAY)
-                      (list (caar y) 
-                            #\: 
-                            #\Space 
-                            #\[ 
-                            (deparsearray (cdar y)) 
-                            #\]))
-                    (T
-                      (error "lista array non valida ultima"))))
-            (list (caar)
-                  #\: 
-                  #\Space 
-                  (caar) 
-                  #\]))))
-    ((not (null (cdr list)))
-      (let (x list)
-        (if (listp (car x)) 
+     (let (x (first list))
+       (cond (listp x) 
               (let (y x)
-                (cond ((eq (cadar) 
-                                'JSONOBJ)
-                        (list (caar) 
-                              #\: 
-                              #\Space 
-                              #\{ 
-                              (deparseobj (cdar)) 
-                              #\, 
-                              #\Space 
-                              (deparsearray (cdr y))))
-                  ((eq  (cadar) 
-                        'JSONARRAY)
-                    (list (caar) 
-                          #\: 
-                          #\Space 
-                          #\[ 
-                          (deparsearray (cdar)) 
-                          #\, 
-                          #\Space 
-                          (deparsearray (cdr y))))
-                  (T
-                    (error "lista array non valida non ultima"))))
-              (list (caar) 
-                    #\: 
-                    #\Space 
-                    (caar) 
-                    #\}))))
+                (cond ((eq (first y) 
+                          'JSONOBJ)
+                        (list #\{ 
+                              (deparseobj (rest y)) 
+                              #\]))
+                      ((eq (car y)
+                          'JSONARRAY)
+                        (list #\[ 
+                              (deparsearray (rest y)) 
+                              #\]))
+                      (T
+                        (error "lista array non valida: ultima"))))
+                (or (stringp x)
+                    (numberp x))
+                  (list x 
+                        #\]))))
+    ((and (not (null (car list)))  
+         (not (null (cdr list))))
+      (let ((x (first list))
+            (f list))
+        (cond ((listp x) 
+                (let ((y x)
+                      (f2 f))
+                  (cond ((eq (first y) 
+                                  'JSONOBJ)
+                          (list #\{ 
+                                (deparseobj (rest y)) 
+                                #\, 
+                                #\Space 
+                                (deparsearray (rest f2))))
+                    ((eq  (cadar y) 
+                          'JSONARRAY)
+                      (list #\[ 
+                            (deparsearray (rest y)) 
+                            #\, 
+                            #\Space 
+                            (deparsearray (rest f2))))
+                    (T
+                      (error "lista array non valida: non ultima")))))
+                ((or (stringp x)
+                    (numberp x))
+                  (list x
+                        #\,
+                        #\Space 
+                        (deparsearray (rest f))))
+             (T
+                (error "lista obj non valida: tipo val")))))
     ((null list)
       #\])
     (T 
-     (error "lista array non valida totale"))
-    ))
+     (error "lista array non valida: totale"))))
 
 
 (defun jsondeparser (list)
-  (cond ((eq  'JSONOBJ 
-              (car list))
-          (cons  #\{ 
-                  (deparseobj (cdr list))))
-        ((eq  'JSONARRAY  
-              (car list))
-          (cons  #\[ 
-                  (deparsearray (cdr list))))
+  (cond ((eq 'JSONOBJ 
+             (car list))
+          (cons #\{ 
+                (deparseobj (cdr list))))
+        ((eq 'JSONARRAY  
+             (car list))
+          (cons #\[ 
+                (deparsearray (cdr list))))
         (T
-          (error "lista non valida"))))
+          (error "lista non valida:"))))
 
 (defun jsondump (Obj Path)
   (with-open-file (stream Path
