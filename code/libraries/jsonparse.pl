@@ -221,12 +221,14 @@ jsonparse(['{', Attr, ':', Val , ',' | Members], [(Attr, Val) | Object]) :-
     ),
     jsonparse(['{' | Members], Object).
 
-jsonparse(['{', Attr, ':', ['{' | Val], ',' | Members], [(Attr, jsonobj(PVal)) | Objects]) :-
+jsonparse(['{', Attr, ':', ['{' | Val], ',' | Members],
+                             [(Attr, jsonobj(PVal)) | Objects]) :-
     string(Attr),
     jsonparse(['{' | Val],PVal),
     jsonparse(['{' | Members], Objects).
 
-jsonparse(['{', Attr, ':', ['[' | Val], ',' | Members], [(Attr, jsonarray(PVal)) | Objects]) :-
+jsonparse(['{', Attr, ':', ['[' | Val], ',' | Members], 
+                             [(Attr, jsonarray(PVal)) | Objects]) :-
     string(Attr),
     jsonparse(['[' | Val], PVal),
     jsonparse(['{' | Members], Objects).
@@ -311,6 +313,19 @@ jsonaccess(jsonobj(Members), Field, Res) :-
     string(Field),
     nth0(_, Members, (Field, Res)).
 
+jsonaccess(jsonobj([(Attr, Val) | _]), [Attr, Index], Res) :-
+    string(Attr),
+    integer(Index),
+    jsonaccess(Val, [Index], Res),
+    !.
+
+jsonaccess(jsonobj(Members), [Field, Index], Res) :-
+    string(Field),
+    nth0(_, Members, (Field, Val)),
+    integer(Index),
+    jsonaccess(Val, [Index], Res),
+    !.
+
 jsonaccess(jsonobj([(Attr, Val) | _]), [Attr], Val) :-
     string(Attr),
     !.
@@ -328,7 +343,7 @@ jsonaccess(jsonarray([Val | Elements]), [Index], Res) :-
     !,
     nth0(Index,[Val | Elements], Res).
 
-jsonaccess(jsonobj([(Attr, Val) | Members]), [Attr | Fields], [Val | Res]) :-
+jsonaccess(jsonobj([(Attr, Val) | Members]), [Attr | Fields], [Val | Res]) :-   
     string(Attr),
     jsonaccess(jsonobj([(Attr, Val) | Members]), Fields, Res).    
 
